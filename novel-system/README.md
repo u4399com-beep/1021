@@ -240,6 +240,18 @@ docker compose exec backend python manage.py changepassword admin
 | `GET/POST /downloads/templates/` | 下载模板 |
 | `POST /downloads/generate/generate/` | 触发文件生成 |
 | `GET /crawler/suggest/?kw=斗破苍穹` | 搜索引擎建议词 |
+| `GET /crawler/engine/status/` | 采集引擎各 Tier 状态（httpx/firecrawl/browser-use/playwright） |
+| `POST /crawler/engine/test/` | 单 Tier 测试某个 URL |
+| `POST /crawler/engine/fetch/` | 完整 fallback 链路抓取 |
+| `GET/POST /auth/users/` | 用户 CRUD（需 `user.manage` 权限） |
+| `GET/POST /auth/roles/` | 角色与权限管理 |
+| `GET /auth/roles/catalog/` | 权限目录（18 个权限码） |
+| `GET /seo/audit/` | 全站 SEO 检测 |
+| `GET /seo/audit/<site_id>/` | 单站点 SEO 检测 |
+| `POST /seo/regenerate-sitemaps/` | 重新生成 sitemap |
+| `GET /sitemap.xml` | 默认站点 sitemap |
+| `GET /rss.xml` | 默认站点 RSS |
+| `GET /book/<slug>/rss.xml` | 单本书的章节 RSS |
 
 完整 API Schema：`http://localhost/api/schema/`  ·  Swagger UI：`http://localhost/api/docs/`
 
@@ -249,6 +261,21 @@ docker compose exec backend python manage.py changepassword admin
 - 密码：`admin123456`
 
 **首次登录后请立即修改密码！**
+
+## RBAC 权限
+
+系统初始化 4 个内置角色（不可删除）：
+
+| 角色 | 权限范围 |
+|------|---------|
+| `super_admin` | 全部权限（18 项） |
+| `editor` | 编辑书籍、采集规则、清洗、分类、下载 |
+| `operator` | 查看 + 执行/暂停/停止采集任务 |
+| `viewer` | 只读 |
+
+权限码 18 项，覆盖：novel / rule / task / cleaner / classifier / site / download / seo / user / system。
+
+可在「用户与权限」页面创建自定义角色并分配任意权限组合。
 
 ## 二次开发
 
@@ -291,12 +318,11 @@ npm run dev   # http://localhost:5173
 
 ## 路线图（后续会话可迭代）
 
-- [ ] 完善 magazine_modern / dark_tech / minimal_rank 主题的 book_detail / chapter 页面
-- [ ] 增加 Browser Use 实际集成测试
-- [ ] 增加 Hyperbrowser 代理池
-- [ ] 增加 RBAC 多用户权限
+- [x] 完善 magazine_modern / dark_tech / minimal_rank 主题的 book_detail / chapter 页面
+- [x] 增加 Firecrawl 和 Browser Use 实测集成（含 engine status / test / fetch API + 后台测试面板）
+- [x] RBAC 多用户权限（4 个内置角色 + 18 个权限码 + 用户管理面板）
+- [x] sitemap.xml 自动生成 + RSS 输出（站点级 RSS + 单本书章节 RSS）
+- [x] SEO 自动检测面板（12 项检查：TDK / GEO / canonical / robots / sitemap / favicon / inject 等）
+- [ ] 增加 Hyperbrowser 代理池实测
 - [ ] 增加 EPUB 封面图嵌入
-- [ ] 增加 sitemap.xml 自动生成
-- [ ] 增加 RSS 输出
-- [ ] 增加 SEO 自动检测面板
 - [ ] 增加采集任务定时调度（cron 表达式）

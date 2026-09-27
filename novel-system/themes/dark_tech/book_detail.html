@@ -1,21 +1,125 @@
-<!-- Book detail placeholder — dark_tech. Full template lives under assets/style.css extensions to be filled in subsequent iterations. -->
+<!-- ============================================================
+     Dark Tech — Book Detail Page
+     ============================================================ -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>{{ book.title }} - {{ site.name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ book.title }} - {{ book.author.name|default:"佚名" }} - {{ site.name|default:"NOVA NOVEL" }}</title>
   <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <meta name="keywords" content="{{ book.title }},{{ book.author.name|default:'' }},暗黑科技小说">
+  <meta name="theme-color" content="#0f0c29">
   <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ book.title }}">
+  <meta property="og:description" content="{{ book.intro|truncatechars:200 }}">
+  <meta property="og:type" content="book">
+  <meta property="og:image" content="{{ book.cover.url|default:book.cover_url }}">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "{{ book.title }}",
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:'' }}" },
+    "description": "{{ book.intro|escapejs }}",
+    "inLanguage": "zh-CN",
+    "image": "{{ book.cover.url|default:book.cover_url }}"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
   {{ site.head_inject|safe }}
 </head>
-<body>
-  <main style="max-width: 800px; margin: 40px auto; padding: 24px;">
-    <h1>{{ book.title }}</h1>
-    <p>作者: {{ book.author.name|default:"佚名" }} | 状态: {{ book.get_status_display }}</p>
-    <p class="intro">{{ book.intro|linebreaksbr }}</p>
-    <a href="/book/{{ book.slug }}/chapter/1">开始阅读</a>
+<body class="dark-body">
+  <div class="grid-bg"></div>
+  <header class="dark-header">
+    <div class="dark-container">
+      <div class="brand">
+        <span class="logo-icon">⟁</span>
+        <span class="brand-name">{{ site.name|default:"NOVA NOVEL" }}</span>
+      </div>
+      <nav class="dark-nav">
+        <a href="/">首页</a>
+        <a href="/book/{{ book.slug }}/toc">章节目录</a>
+        <a href="/search">搜索</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dark-container">
+    <article class="dt-book-card">
+      <div class="dt-book-cover">
+        <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+        <div class="cover-glow"></div>
+      </div>
+      <div class="dt-book-info">
+        <span class="dt-badge badge-{{ book.status }}">{{ book.get_status_display }}</span>
+        <h1 class="dt-title">{{ book.title }}</h1>
+        <p class="dt-author">作者 / {{ book.author.name|default:"佚名" }}</p>
+        <div class="dt-stats">
+          <div class="stat-block">
+            <span class="stat-label">字数</span>
+            <span class="stat-value">{{ book.word_count }}</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-label">章节</span>
+            <span class="stat-value">{{ book.chapter_count }}</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-label">评分</span>
+            <span class="stat-value">★ {{ book.rating|floatformat:1 }}</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-label">浏览</span>
+            <span class="stat-value">{{ book.view_count }}</span>
+          </div>
+        </div>
+
+        <div class="dt-tags-row">
+          {% for c in book.categories.all %}
+          <a href="/category/{{ c.slug }}" class="dt-cat">{{ c.name }}</a>
+          {% endfor %}
+          {% for t in book.tags.all|slice:":5" %}
+          <a href="/tag/{{ t.name }}" class="dt-tag">{{ t.name }}</a>
+          {% endfor %}
+        </div>
+
+        <div class="dt-intro">
+          <h3>■ 内容简报</h3>
+          <p>{{ book.intro|linebreaksbr }}</p>
+        </div>
+
+        <div class="dt-actions">
+          <a href="/book/{{ book.slug }}/chapter/1" class="dt-btn dt-btn-primary">▶ 开始阅读</a>
+          <a href="/book/{{ book.slug }}/toc" class="dt-btn dt-btn-secondary">≡ 目录</a>
+          <a href="/download/{{ book.slug }}" class="dt-btn dt-btn-tertiary">↓ 下载</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="dt-latest">
+      <h2 class="dt-section-title">▸ 最新章节</h2>
+      <div class="dt-ch-grid">
+        {% for ch in latest_chapters %}
+        <a href="/book/{{ book.slug }}/chapter/{{ ch.order_index }}" class="dt-ch-card">
+          <span class="ch-rank">#{{ ch.order_index }}</span>
+          <span class="ch-title">{{ ch.title }}</span>
+          <span class="ch-date">{{ ch.fetched_at|date:"m-d" }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
   </main>
+
+  <footer class="dark-footer">
+    <p>© {{ now|date:"Y" }} {{ site.name|default:"NOVA NOVEL" }} · 在线阅读 · 暗黑科技</p>
+  </footer>
   {{ site.body_inject|safe }}
 </body>
 </html>

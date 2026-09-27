@@ -1,22 +1,68 @@
-<!-- Chapter reading placeholder — dark_tech -->
+<!-- ============================================================
+     Dark Tech — Chapter Reading Page
+     ============================================================ -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>{{ chapter.title }} - {{ book.title }} - {{ site.name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ chapter.title }} - {{ book.title }} - {{ site.name|default:"NOVA NOVEL" }}</title>
+  <meta name="description" content="{{ chapter.content|truncatechars:160|striptags }}">
+  <meta name="theme-color" content="#0f0c29">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ chapter.title }}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ chapter.title|escapejs }}",
+    "isPartOf": { "@type": "Book", "name": "{{ book.title|escapejs }}" },
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:''|escapejs }}" },
+    "inLanguage": "zh-CN"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
   {{ site.head_inject|safe }}
 </head>
-<body>
-  <main style="max-width: 800px; margin: 40px auto; padding: 24px;">
-    <h1>{{ chapter.title }}</h1>
-    <article>{{ chapter.content|safe }}</article>
-    <nav>
-      {% if prev_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ prev_chapter.order_index }}">上一章</a>{% endif %}
-      <a href="/book/{{ book.slug }}/toc">目录</a>
-      {% if next_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ next_chapter.order_index }}">下一章</a>{% endif %}
-    </nav>
+<body class="dark-body dt-reading">
+  <div class="grid-bg"></div>
+  <header class="dark-header">
+    <div class="dark-container">
+      <div class="brand">
+        <span class="logo-icon">⟁</span>
+        <span class="brand-name">{{ site.name|default:"NOVA NOVEL" }}</span>
+      </div>
+      <nav class="dark-nav">
+        <a href="/book/{{ book.slug }}">← 返回书页</a>
+        <a href="/book/{{ book.slug }}/toc">章节目录</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dark-container dt-reading-main">
+    <div class="dt-chapter-frame">
+      <p class="dt-ch-eyebrow">CHAPTER // {{ chapter.order_index|stringformat:"05d" }}</p>
+      <h1 class="dt-ch-h1">{{ chapter.title }}</h1>
+      <div class="dt-ch-content">
+        {{ chapter.content|safe }}
+      </div>
+      <nav class="dt-ch-nav">
+        {% if prev_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ prev_chapter.order_index }}" class="nav-btn nav-prev">◄ 上一章</a>{% endif %}
+        <a href="/book/{{ book.slug }}/toc" class="nav-btn nav-toc">▣ 目录</a>
+        {% if next_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ next_chapter.order_index }}" class="nav-btn nav-next">下一章 ►</a>{% endif %}
+      </nav>
+    </div>
   </main>
+
+  <footer class="dark-footer">
+    <p>© {{ now|date:"Y" }} {{ site.name|default:"NOVA NOVEL" }}</p>
+  </footer>
   {{ site.body_inject|safe }}
 </body>
 </html>

@@ -44,10 +44,23 @@ playwright==1.46.0
 playwright-stealth==1.0.6
 patchright==1.0.7
 
-# ---- AI / browser-use crawlers ----
-# firecrawl-py==1.5.0      # uncomment when API key available
-# browser-use==0.1.35      # requires Python ≥ 3.11 + openai
-# crawl4ai==0.3.72         # optional alt; uncomment when needed
+# ---- AI / browser-use crawlers (Tier-1 and Tier-2) ----
+# Uncomment the lines for the tiers you want to enable.
+
+# Tier-1: Firecrawl (hosted AI scraping, handles JS + anti-bot)
+# Requires: FIRECRAWL_API_KEY in .env
+firecrawl-py==1.5.0
+
+# Tier-2: Browser Use (LLM-driven browser automation)
+# Requires: BROWSER_USE_OPENAI_API_KEY or OPENAI_API_KEY in .env
+# Also requires langchain-openai for the LLM driver.
+# Note: Browser Use needs Python >= 3.11 + Playwright already installed.
+browser-use==0.1.35
+langchain-openai==0.2.2
+markdown==3.7
+
+# Optional alt: Crawl4AI (uncomment if you prefer it over Firecrawl)
+# crawl4ai==0.3.72
 
 # ---- HTML / content cleaning ----
 readability-lxml==0.8.1

@@ -1,158 +1,46 @@
-"""crawler_engine — three-tier fetch with fallback.
+"""crawler_engine.fetcher — three-tier fetch with graceful fallback.
 
-Tier 1: Firecrawl (fast, AI-aware, hosted)
-Tier 2: Browser Use (LLM-driven browser automation)
-Tier 3: Playwright + Hyperbrowser (local browser with anti-detection)
+Tier 0 (cheap):  requests/httpx           — static pages, 90% of sites
+Tier 1 (AI host): Firecrawl                — handles JS rendering + anti-bot
+Tier 2 (LLM):    Browser Use              — flexible interaction, slow
+Tier 3 (local):  Playwright + Stealth (+ Hyperbrowser optional)
 
-Each tier receives a `RetryContext` and either returns HTML or raises. The
-parent fetcher walks the tiers in order and stops at the first success.
+The orchestrator walks tiers in order. A tier is skipped if:
+  - Its package is not installed (RuntimeError → catch + log + next tier)
+  - Its API key is not configured (same path)
+
+For each enabled tier, up to `max_retries` attempts are made before moving on.
 """
 from __future__ import annotations
 
-import asyncio
 import time
 from dataclasses import dataclass
 from typing import Optional
 
 from loguru import logger
 
-from .anti_detection.pool import get_cookie, get_user_agent
+from .anti_detection.pool import get_cookie, get_proxy, get_user_agent
 
 
 # ------------------------------------------------------------------
 # Retry context
 # ------------------------------------------------------------------
 @dataclass
-class RetryContext:
+class FetchContext:
     url: str
     method: str = "GET"
     headers: dict | None = None
     timeout: int = 30
-    use_browser: bool = False  # hint: site requires JS rendering
+    use_browser: bool = False
     max_retries: int = 3
-    raw_headers: bool = False
     proxy: Optional[str] = None
-    last_error: Optional[str] = None
-
-    def with_retry(self):
-        return range(self.max_retries)
+    raw_headers: bool = False
 
 
 # ------------------------------------------------------------------
-# Tier 1 — Firecrawl
+# Tier 0 — httpx (synchronous)
 # ------------------------------------------------------------------
-def fetch_with_firecrawl(ctx: RetryContext) -> str:
-    """Try Firecrawl first. Requires FIRECRAWL_API_KEY configured."""
-    from django.conf import settings
-
-    api_key = settings.CRAWLER.get("FIRECRAWL_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("firecrawl disabled: no API key")
-
-    try:
-        from firecrawl import FirecrawlApp  # type: ignore
-    except ImportError:
-        raise RuntimeError("firecrawl-py not installed")
-
-    app = FirecrawlApp(api_key=api_key, api_url=settings.CRAWLER["FIRECRAWL_API_URL"])
-    result = app.scrape_url(
-        ctx.url,
-        params={"formats": ["html"], "waitFor": 2000},
-    )
-    if not result or "html" not in result:
-        raise RuntimeError("firecrawl empty response")
-    return result["html"]
-
-
-# ------------------------------------------------------------------
-# Tier 2 — Browser Use
-# ------------------------------------------------------------------
-def fetch_with_browser_use(ctx: RetryContext) -> str:
-    """LLM-driven browser — slow but flexible for sites with complex anti-bot."""
-    from django.conf import settings
-
-    api_key = settings.CRAWLER.get("BROWSER_USE_OPENAI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("browser-use disabled: no OpenAI key")
-
-    try:
-        import os
-        os.environ.setdefault("OPENAI_API_KEY", api_key)
-        from browser_use import Agent  # type: ignore
-        from langchain_openai import ChatOpenAI  # type: ignore
-    except ImportError:
-        raise RuntimeError("browser-use not installed")
-
-    async def _run():
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        agent = Agent(
-            task=f"Navigate to {ctx.url} and return the full HTML.",
-            llm=llm,
-        )
-        result = await agent.run()
-        return str(result)
-
-    return asyncio.get_event_loop().run_until_complete(_run())
-
-
-# ------------------------------------------------------------------
-# Tier 3 — Playwright + Hyperbrowser
-# ------------------------------------------------------------------
-def fetch_with_playwright(ctx: RetryContext) -> str:
-    """Local Playwright with stealth + optional Hyperbrowser proxy."""
-    try:
-        from playwright.sync_api import sync_playwright
-        from playwright_stealth import Stealth  # type: ignore
-    except ImportError:
-        raise RuntimeError("playwright not installed")
-
-    ua = get_user_agent()
-    cookie = get_cookie()
-
-    with sync_playwright() as p:
-        browser_args = ["--no-sandbox", "--disable-dev-shm-usage"]
-        if ctx.proxy:
-            browser_args.append(f"--proxy-server={ctx.proxy}")
-        if not ctx.use_browser:
-            # headless unless explicitly hinted
-            browser = p.chromium.launch(args=browser_args, headless=True)
-        else:
-            browser = p.chromium.launch(args=browser_args, headless=True)
-
-        context = browser.new_context(
-            user_agent=ua,
-            viewport={"width": 1366, "height": 768},
-            locale="zh-CN",
-            timezone_id="Asia/Shanghai",
-            extra_http_headers={
-                "Accept-Language": "zh-CN,zh;q=0.9",
-                "DNT": "1",
-                "Upgrade-Insecure-Requests": "1",
-            },
-        )
-        if cookie:
-            context.add_cookies([{
-                "name": k, "value": v, "domain": ".{ctx.url.split('/')[2]}",
-                "path": "/",
-            } for k, v in cookie.items()])
-
-        page = context.new_page()
-        try:
-            Stealth().apply(page)  # type: ignore
-        except Exception:
-            pass
-
-        page.goto(ctx.url, wait_until="domcontentloaded", timeout=ctx.timeout * 1000)
-        page.wait_for_timeout(1500)  # grace period for JS
-        html = page.content()
-        browser.close()
-        return html
-
-
-# ------------------------------------------------------------------
-# Tier 0 (cheap) — requests/httpx
-# ------------------------------------------------------------------
-def fetch_with_requests(ctx: RetryContext) -> str:
+def fetch_with_httpx(ctx: FetchContext) -> str:
     import httpx
 
     headers = {
@@ -160,6 +48,13 @@ def fetch_with_requests(ctx: RetryContext) -> str:
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
         "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
     }
     if ctx.headers:
         headers.update(ctx.headers)
@@ -167,18 +62,62 @@ def fetch_with_requests(ctx: RetryContext) -> str:
     with httpx.Client(timeout=ctx.timeout, follow_redirects=True) as client:
         r = client.get(ctx.url, headers=headers)
         if r.status_code >= 400:
-            raise RuntimeError(f"http {r.status_code}")
-        return r.text
+            raise RuntimeError(f"httpx: status {r.status_code}")
+        # Try to detect charset, fallback to utf-8
+        try:
+            return r.content.decode(r.encoding or "utf-8", errors="replace")
+        except (LookupError, TypeError):
+            return r.text
 
 
 # ------------------------------------------------------------------
-# Orchestrator
+# Tier 1 — Firecrawl
+# ------------------------------------------------------------------
+def fetch_with_firecrawl(ctx: FetchContext) -> str:
+    from .firecrawl_client import is_enabled, scrape_html
+
+    if not is_enabled():
+        raise RuntimeError("firecrawl: API key not configured")
+    return scrape_html(ctx.url, wait_for=2000)
+
+
+# ------------------------------------------------------------------
+# Tier 2 — Browser Use
+# ------------------------------------------------------------------
+def fetch_with_browser_use(ctx: FetchContext) -> str:
+    from .browser_use_client import is_enabled, scrape_html
+
+    if not is_enabled():
+        raise RuntimeError("browser-use: API key not configured")
+    task_hint = "Return the raw HTML of the entire page body."
+    return scrape_html(ctx.url, task_hint=task_hint)
+
+
+# ------------------------------------------------------------------
+# Tier 3 — Playwright + Stealth (+ optional Hyperbrowser)
+# ------------------------------------------------------------------
+def fetch_with_playwright(ctx: FetchContext) -> str:
+    from .playwright_client import is_enabled, scrape_html
+
+    if not is_enabled():
+        raise RuntimeError("playwright: not installed")
+    proxy = ctx.proxy or get_proxy()
+    return scrape_html(
+        ctx.url,
+        use_browser=ctx.use_browser,
+        proxy=proxy,
+        timeout=ctx.timeout,
+    )
+
+
+# ------------------------------------------------------------------
+# Orchestration
 # ------------------------------------------------------------------
 TIERS = (
-    fetch_with_requests,
-    fetch_with_firecrawl,
-    fetch_with_browser_use,
-    fetch_with_playwright,
+    ("httpx",       fetch_with_httpx),
+    ("firecrawl",   fetch_with_firecrawl),
+    ("browser-use", fetch_with_browser_use),
+    ("playwright",  fetch_with_playwright),
 )
 
 
@@ -186,31 +125,40 @@ def fetch_page(url: str, *, use_browser: bool = False, proxy: str | None = None)
     """Walk through tiers in order, return first HTML.
 
     Order:
-      1. requests/httpx (cheap, fast) — handles most static pages
-      2. firecrawl — AI-aware, may bypass some anti-bot
-      3. browser-use — flexible, slow
-      4. playwright+stealth — fallback, most powerful
+      1. httpx       — cheap, fast (handles most static pages)
+      2. firecrawl   — AI-aware hosted scraping (handles JS + anti-bot)
+      3. browser-use — LLM-driven browser (flexible, slow)
+      4. playwright  — local browser with stealth (fallback, most powerful)
+
+    Each tier is attempted up to `max_retries` times before moving on.
+    Tiers whose dependencies are missing or whose API key is not configured
+    are skipped silently after the first attempt.
     """
-    ctx = RetryContext(url=url, use_browser=use_browser, proxy=proxy)
-    last_err = None
-    for idx, tier_fn in enumerate(TIERS):
-        for attempt in ctx.with_retry():
+    ctx = FetchContext(url=url, use_browser=use_browser, proxy=proxy)
+    last_err: str | None = None
+
+    for name, fn in TIERS:
+        # Try each tier up to max_retries times
+        for attempt in range(1, ctx.max_retries + 1):
             try:
                 t0 = time.time()
-                html = tier_fn(ctx)
-                logger.info(f"tier{idx} {tier_fn.__name__} ok in {time.time()-t0:.2f}s len={len(html)}")
+                html = fn(ctx)
+                logger.info(f"tier '{name}' ok in {time.time()-t0:.2f}s len={len(html)} url={url[:80]}")
                 return html
             except Exception as e:
-                last_err = repr(e)
-                logger.warning(f"tier{idx} {tier_fn.__name__} attempt {attempt+1} failed: {last_err}")
-                # Don't retry tiers that aren't installed
-                if "not installed" in last_err or "disabled" in last_err:
+                err = repr(e)
+                last_err = err
+                logger.warning(f"tier '{name}' attempt {attempt} failed: {err}")
+                # Skip tier entirely if it's not installed/configured
+                if "not installed" in err or "not configured" in err:
                     break
-    raise RuntimeError(f"all tiers exhausted: {last_err}")
+                # Otherwise retry
+                continue
+    raise RuntimeError(f"all tiers exhausted, last error: {last_err}")
 
 
 def fetch_page_sync(url: str, *, use_browser: bool = False, proxy: str | None = None) -> str:
-    """Synchronous wrapper — same as fetch_page (already sync)."""
+    """Backwards-compat alias — same as `fetch_page` (already sync)."""
     return fetch_page(url, use_browser=use_browser, proxy=proxy)
 
 
@@ -220,3 +168,75 @@ async def fetch_page_async(url: str, *, use_browser: bool = False, proxy: str | 
     return await asyncio.get_event_loop().run_in_executor(
         None, lambda: fetch_page(url, use_browser=use_browser, proxy=proxy)
     )
+
+
+# ------------------------------------------------------------------
+# Diagnostic — used by the engine test endpoint
+# ------------------------------------------------------------------
+def diagnose() -> dict:
+    """Return a quick status report of each tier's availability."""
+    status = {}
+    for name, _ in TIERS:
+        try:
+            if name == "httpx":
+                import httpx  # noqa
+                status[name] = {"installed": True, "configured": True}
+            elif name == "firecrawl":
+                from .firecrawl_client import is_enabled
+                import importlib
+                installed = importlib.util.find_spec("firecrawl") is not None
+                status[name] = {"installed": installed, "configured": is_enabled()}
+            elif name == "browser-use":
+                import importlib
+                installed = importlib.util.find_spec("browser_use") is not None
+                from .browser_use_client import is_enabled
+                status[name] = {"installed": installed, "configured": is_enabled()}
+            elif name == "playwright":
+                import importlib
+                installed = importlib.util.find_spec("playwright") is not None
+                from .playwright_client import is_hyperbrowser_enabled
+                status[name] = {
+                    "installed": installed, "configured": True,
+                    "hyperbrowser": is_hyperbrowser_enabled(),
+                }
+        except Exception as e:
+            status[name] = {"installed": False, "configured": False, "error": repr(e)}
+    return status
+
+
+def test_url(url: str, *, tier: str | None = None) -> dict:
+    """Test-fetch a URL with a specific tier (or all tiers in sequence).
+
+    Returns: {tier, success, elapsed_ms, html_size, error}
+    """
+    if tier and tier not in dict(TIERS).keys():
+        return {"error": f"unknown tier '{tier}'"}
+
+    target_tiers = [tier] if tier else [name for name, _ in TIERS]
+    ctx = FetchContext(url=url, max_retries=1)
+    results = []
+
+    for name in target_tiers:
+        fn = dict(TIERS)[name]
+        t0 = time.time()
+        try:
+            html = fn(ctx)
+            results.append({
+                "tier": name, "success": True,
+                "elapsed_ms": int((time.time() - t0) * 1000),
+                "html_size": len(html),
+                "error": None,
+            })
+            if tier:  # only tested one tier
+                break
+            else:
+                # Found one that works, stop the chain
+                break
+        except Exception as e:
+            results.append({
+                "tier": name, "success": False,
+                "elapsed_ms": int((time.time() - t0) * 1000),
+                "html_size": 0,
+                "error": repr(e),
+            })
+    return {"results": results}

@@ -18,9 +18,13 @@ urlpatterns = [
     path("api/v1/themes/", include("apps.themes.urls")),
     path("api/v1/sites/", include("apps.sites.urls")),
     path("api/v1/downloads/", include("apps.file_download.urls")),
+    path("api/v1/seo/", include("apps.seo.urls")),
     path("api/v1/", include("apps.api.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
+    # Front-facing SEO endpoints (no /api/v1/ prefix, easy for crawlers)
+    path("sitemap.xml", include("apps.seo.urls")),
+    path("rss.xml", include("apps.seo.urls")),
 ]
 
 # Theme-aware front-end serving (multi-site) — handled by nginx in prod

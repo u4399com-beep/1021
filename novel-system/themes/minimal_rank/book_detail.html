@@ -1,21 +1,133 @@
-<!-- Book detail placeholder — minimal_rank. Full template lives under assets/style.css extensions to be filled in subsequent iterations. -->
+<!-- ============================================================
+     Minimal Rank — Book Detail Page
+     ============================================================ -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>{{ book.title }} - {{ site.name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ book.title }} — {{ book.author.name|default:"佚名" }} — {{ site.name|default:"书榜" }}</title>
   <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <meta name="keywords" content="{{ book.title }},{{ book.author.name|default:'' }},小说,书榜">
   <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <meta property="og:title" content="{{ book.title }}">
+  <meta property="og:type" content="book">
+  <meta property="og:image" content="{{ book.cover.url|default:book.cover_url }}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "{{ book.title }}",
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:'' }}" },
+    "description": "{{ book.intro|escapejs }}",
+    "inLanguage": "zh-CN",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "{{ book.rating|floatformat:1 }}",
+      "reviewCount": "{{ book.view_count }}"
+    }
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
   {{ site.head_inject|safe }}
 </head>
-<body>
-  <main style="max-width: 800px; margin: 40px auto; padding: 24px;">
-    <h1>{{ book.title }}</h1>
-    <p>作者: {{ book.author.name|default:"佚名" }} | 状态: {{ book.get_status_display }}</p>
-    <p class="intro">{{ book.intro|linebreaksbr }}</p>
-    <a href="/book/{{ book.slug }}/chapter/1">开始阅读</a>
+<body class="rank-body">
+  <header class="rank-header">
+    <div class="rank-container">
+      <a href="/" class="brand">{{ site.name|default:"书榜" }}</a>
+      <nav>
+        <a href="/">首页</a>
+        <a href="/rank/all">总榜</a>
+        <a href="/rank/week">周榜</a>
+        <a href="/book/{{ book.slug }}/toc">目录</a>
+      </nav>
+      <form class="search" action="/search" method="get">
+        <input type="text" name="q" placeholder="书名 / 作者 / 标签">
+      </form>
+    </div>
+  </header>
+
+  <main class="rank-container">
+    <article class="rank-book-detail">
+      <div class="detail-cover">
+        <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+      </div>
+      <div class="detail-info">
+        <h1 class="detail-title">{{ book.title }}</h1>
+        <p class="detail-author">
+          by <a href="/search?q={{ book.author.name|default:'' }}">{{ book.author.name|default:"佚名" }}</a>
+        </p>
+        <div class="detail-meta">
+          <span class="meta-row">
+            <span class="rating-large">★ {{ book.rating|floatformat:1 }}</span>
+            <span class="rating-text">({{ book.view_count }} 浏览)</span>
+          </span>
+          <span class="status-badge status-{{ book.status }}">{{ book.get_status_display }}</span>
+        </div>
+
+        <div class="detail-stats">
+          <div class="ds-item">
+            <span class="ds-label">字数</span>
+            <span class="ds-value">{{ book.word_count }}</span>
+          </div>
+          <div class="ds-item">
+            <span class="ds-label">章节</span>
+            <span class="ds-value">{{ book.chapter_count }}</span>
+          </div>
+          <div class="ds-item">
+            <span class="ds-label">更新</span>
+            <span class="ds-value">{{ book.updated_at|date:"Y-m-d" }}</span>
+          </div>
+        </div>
+
+        <div class="detail-cats">
+          {% for c in book.categories.all %}
+          <a href="/category/{{ c.slug }}" class="cat-tag">{{ c.name }}</a>
+          {% endfor %}
+          {% for t in book.tags.all|slice:":6" %}
+          <a href="/tag/{{ t.name }}" class="book-tag">{{ t.name }}</a>
+          {% endfor %}
+        </div>
+
+        <div class="detail-intro">
+          <h3>简介</h3>
+          <p>{{ book.intro|linebreaksbr }}</p>
+        </div>
+
+        <div class="detail-actions">
+          <a href="/book/{{ book.slug }}/chapter/1" class="action-btn primary">开始阅读</a>
+          <a href="/book/{{ book.slug }}/toc" class="action-btn secondary">查看目录</a>
+          <a href="/download/{{ book.slug }}" class="action-btn tertiary">下载 TXT</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="rank-detail-latest">
+      <div class="rank-tabs">
+        <a class="active">最新章节</a>
+      </div>
+      <ol class="latest-list">
+        {% for ch in latest_chapters %}
+        <li>
+          <span class="ch-no">#{{ ch.order_index }}</span>
+          <a href="/book/{{ book.slug }}/chapter/{{ ch.order_index }}">{{ ch.title }}</a>
+          <span class="ch-time">{{ ch.fetched_at|date:"Y-m-d H:i" }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
   </main>
+
+  <footer class="rank-footer">
+    <div class="rank-container">
+      <p>&copy; {{ now|date:"Y" }} {{ site.name|default:"书榜" }} · 极简排行榜 · All rights reserved.</p>
+    </div>
+  </footer>
   {{ site.body_inject|safe }}
 </body>
 </html>

@@ -1,0 +1,190 @@
+/* ============================================================
+   Minimal Rank — Book detail + chapter styles
+   ============================================================ */
+
+/* ---------- Book Detail ---------- */
+.rank-book-detail {
+  display: grid; grid-template-columns: 240px 1fr;
+  gap: 32px; padding: 32px 0;
+  border-bottom: 1px solid var(--border);
+}
+.detail-cover img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  background: var(--bg-2);
+}
+.detail-info h1.detail-title {
+  font-size: 32px; font-weight: 700; line-height: 1.2;
+  margin-bottom: 12px;
+}
+.detail-author {
+  font-size: 16px; color: var(--muted);
+  margin-bottom: 16px;
+}
+.detail-author a {
+  color: var(--accent); text-decoration: none;
+}
+.detail-author a:hover { text-decoration: underline; }
+
+.detail-meta {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 16px;
+}
+.rating-large {
+  font-size: 24px; font-weight: 700; color: var(--star);
+}
+.rating-text {
+  font-size: 13px; color: var(--muted);
+}
+.status-badge {
+  font-size: 12px; padding: 4px 10px; border-radius: 12px;
+  background: var(--bg-2); color: var(--muted);
+  font-weight: 500;
+}
+.status-badge.status-completed { color: #10b981; background: rgba(16,185,129,0.1); }
+.status-badge.status-ongoing { color: #f59e0b; background: rgba(245,158,11,0.1); }
+
+.detail-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin: 16px 0;
+  padding: 16px; background: var(--bg-2);
+  border-radius: 4px;
+}
+.ds-item { text-align: center; }
+.ds-label {
+  display: block; font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.ds-value {
+  display: block; font-size: 18px; font-weight: 700; color: var(--text);
+}
+
+.detail-cats {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 20px;
+}
+.cat-tag, .book-tag {
+  font-size: 12px; padding: 4px 10px;
+  border-radius: 4px; text-decoration: none;
+}
+.cat-tag { background: rgba(76,161,175,0.1); color: var(--accent-2); }
+.cat-tag:hover { background: var(--accent-2); color: #fff; }
+.book-tag { background: var(--bg-2); color: var(--muted); }
+.book-tag:hover { background: var(--accent); color: #fff; }
+
+.detail-intro h3 {
+  font-size: 16px; color: var(--text);
+  margin-bottom: 8px; font-weight: 700;
+}
+.detail-intro p {
+  font-size: 14px; line-height: 1.8; color: var(--muted);
+  background: var(--bg-2); padding: 16px; border-radius: 4px;
+  border-left: 3px solid var(--accent);
+}
+
+.detail-actions {
+  display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap;
+}
+.action-btn {
+  padding: 12px 24px; text-decoration: none;
+  font-size: 14px; font-weight: 600; border-radius: 4px;
+  transition: all .2s;
+}
+.action-btn.primary { background: var(--accent); color: #fff; }
+.action-btn.primary:hover { background: #1a2535; }
+.action-btn.secondary {
+  background: #fff; color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.action-btn.secondary:hover { background: var(--accent); color: #fff; }
+.action-btn.tertiary {
+  background: var(--bg-2); color: var(--muted);
+  border: 1px solid var(--border);
+}
+.action-btn.tertiary:hover { color: var(--accent); border-color: var(--accent); }
+
+.rank-detail-latest { padding: 24px 0; }
+.latest-list { list-style: none; }
+.latest-list li {
+  display: grid; grid-template-columns: 60px 1fr 160px;
+  align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  transition: background .2s;
+}
+.latest-list li:hover { background: var(--bg-2); }
+.ch-no {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--muted);
+  font-weight: 600;
+}
+.latest-list li a {
+  color: var(--text); text-decoration: none; font-weight: 500;
+}
+.latest-list li a:hover { color: var(--accent-2); }
+.ch-time { color: var(--muted); font-size: 12px; text-align: right; }
+
+/* ---------- Chapter Reading ---------- */
+.rank-reading { background: var(--bg); }
+.rank-reading-main { max-width: 760px; padding: 32px 24px 64px; }
+.rank-chapter {
+  background: #fff; padding: 56px 56px 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.ch-eyebrow {
+  font-size: 12px; color: var(--muted);
+  text-align: center; letter-spacing: 2px;
+  margin-bottom: 12px; text-transform: uppercase;
+}
+.rank-chapter h1 {
+  font-size: 26px; font-weight: 700; text-align: center;
+  margin-bottom: 32px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.chapter-content p {
+  font-size: 17px; line-height: 2.0; color: #1f2937;
+  margin-bottom: 20px; text-indent: 2em;
+}
+.chapter-content h2 {
+  font-size: 20px; font-weight: 700; margin: 32px 0 16px;
+}
+.chapter-content img {
+  max-width: 100%; height: auto; margin: 16px 0;
+  border-radius: 4px;
+}
+
+.chapter-nav {
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 16px;
+}
+.nav-link {
+  padding: 10px 24px; background: var(--bg-2);
+  color: var(--text); text-decoration: none;
+  border-radius: 4px; font-size: 14px; font-weight: 500;
+  transition: all .2s;
+}
+.nav-link:hover { background: var(--accent); color: #fff; }
+.nav-toc { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.nav-toc:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+@media (max-width: 768px) {
+  .rank-book-detail { grid-template-columns: 1fr; gap: 16px; padding: 16px 0; }
+  .detail-cover { max-width: 200px; margin: 0 auto; }
+  .detail-title { font-size: 24px; }
+  .detail-stats { grid-template-columns: 1fr; gap: 8px; padding: 12px; }
+  .detail-actions { flex-direction: column; }
+  .detail-actions a { width: 100%; text-align: center; }
+  .latest-list li { grid-template-columns: 50px 1fr; font-size: 13px; }
+  .latest-list .ch-time { display: none; }
+  .rank-chapter { padding: 32px 20px; }
+  .rank-chapter h1 { font-size: 20px; margin-bottom: 20px; padding-bottom: 16px; }
+  .chapter-content p { font-size: 15px; line-height: 1.9; }
+  .chapter-nav { flex-direction: column; gap: 8px; }
+  .nav-link { width: 100%; text-align: center; }
+}

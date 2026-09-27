@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from apps.account.models import PERMISSION_CATALOG, Permission, Role
 from apps.content_cleaner.models import CleaningRule
 from apps.file_download.models import DownloadTemplate
 from apps.novel.models import Category
@@ -106,6 +107,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.MIGRATE_HEADING("Seeding default data..."))
 
+        # 0. Permissions + default roles (RBAC)
+        self._seed_permissions()
+        self._seed_roles()
+
         # 1. Superuser
         if not User.objects.filter(username="admin").exists():
             User.objects.create_superuser(
@@ -182,3 +187,66 @@ class Command(BaseCommand):
             self.stdout.write("  - default site already exists")
 
         self.stdout.write(self.style.SUCCESS("Default data initialized."))
+
+    # ------------------------------------------------------------------
+    # RBAC seeding helpers
+    # ------------------------------------------------------------------
+    def _seed_permissions(self):
+        """Insert all permissions from PERMISSION_CATALOG."""
+        for code, name, desc in PERMISSION_CATALOG:
+            obj, created = Permission.objects.update_or_create(
+                code=code,
+                defaults={"name": name, "description": desc},
+            )
+            self.stdout.write(f"  {'+' if created else '~'} permission {code}")
+
+    def _seed_roles(self):
+        """Seed four default roles: super-admin, editor, operator, viewer."""
+
+        # 1) super-admin — has every permission (but is_system=True so it can't be deleted)
+        super_admin, _ = Role.objects.get_or_create(
+            code="super_admin", defaults={"name": "超级管理员", "is_system": True,
+                                            "description": "拥有全部权限，可管理用户和系统设置"}
+        )
+        super_admin.permissions.set(Permission.objects.all())
+        self.stdout.write(f"  ~ role {super_admin.code}: {super_admin.permissions.count()} perms")
+
+        # 2) editor — can manage novels, rules, cleaner, classifier, download
+        editor, _ = Role.objects.get_or_create(
+            code="editor", defaults={"name": "编辑", "is_system": True,
+                                       "description": "管理书籍、采集规则、清洗规则、分类、下载模板"}
+        )
+        editor.permissions.set(Permission.objects.filter(
+            code__in=[
+                "novel.view", "novel.edit", "novel.delete",
+                "rule.view", "rule.edit",
+                "cleaner.edit", "classifier.edit",
+                "download.manage",
+                "seo.view", "system.view",
+            ]
+        ))
+        self.stdout.write(f"  ~ role {editor.code}: {editor.permissions.count()} perms")
+
+        # 3) operator — can run/pause/stop tasks (but not edit rules)
+        operator, _ = Role.objects.get_or_create(
+            code="operator", defaults={"name": "操作员", "is_system": True,
+                                          "description": "查看规则、运行/暂停/停止采集任务"}
+        )
+        operator.permissions.set(Permission.objects.filter(
+            code__in=[
+                "novel.view", "rule.view", "task.view", "task.run",
+                "seo.view", "system.view",
+            ]
+        ))
+        self.stdout.write(f"  ~ role {operator.code}: {operator.permissions.count()} perms")
+
+        # 4) viewer — read-only across the board
+        viewer, _ = Role.objects.get_or_create(
+            code="viewer", defaults={"name": "查看者", "is_system": True,
+                                        "description": "只读，可查看所有数据，不可修改"}
+        )
+        viewer.permissions.set(Permission.objects.filter(
+            code__in=["novel.view", "rule.view", "task.view",
+                      "seo.view", "system.view"]
+        ))
+        self.stdout.write(f"  ~ role {viewer.code}: {viewer.permissions.count()} perms")

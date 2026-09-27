@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "apps.themes",
     "apps.sites",
     "apps.file_download",
+    "apps.seo",
 ]
 
 MIDDLEWARE = [

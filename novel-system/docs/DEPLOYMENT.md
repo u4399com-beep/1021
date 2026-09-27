@@ -157,6 +157,7 @@ docker compose logs -f backend
 | 100+ 分类关键词 | 用于智能分类 |
 | 5 条完结规则 | 已完结/全本/大结局等模式 |
 | 2 套下载模板 | TXT + EPUB |
+| 18 个权限码 + 4 个内置角色 | RBAC（super_admin / editor / operator / viewer） |
 | 默认站点 | localhost → simple_reading 主题 |
 
 ### 4.1 修改管理员密码（强烈建议）
@@ -164,6 +165,89 @@ docker compose logs -f backend
 ```bash
 docker compose exec backend python manage.py changepassword admin
 ```
+
+---
+
+## 4.5 配置采集引擎 API Key（可选）
+
+启动后，后台 → 系统设置 → 采集引擎标签页可看到每个 Tier 的状态：
+
+| Tier | 用途 | 依赖 | 配置方式 |
+|------|------|------|---------|
+| httpx | 静态页面 | 已内置 | 无需配置 |
+| firecrawl | AI 托管爬虫（处理 JS+反爬） | `firecrawl-py` | `FIRECRAWL_API_KEY` |
+| browser-use | LLM 驱动浏览器 | `browser-use` + `langchain-openai` | `BROWSER_USE_OPENAI_API_KEY` 或 `OPENAI_API_KEY` |
+| playwright | 本地浏览器 + Stealth | `playwright` | 可选 `HYPERBROWSER_API_KEY` 走 CDP 远程浏览器 |
+
+**首次配置**：编辑 `.env` 后重启：
+
+```bash
+vim /opt/novel-system/.env
+# 设置 FIRECRAWL_API_KEY=fc-xxxxx
+# 设置 OPENAI_API_KEY=sk-xxxxx
+# 设置 HYPERBROWSER_API_KEY=hb-xxxxx
+cd /opt/novel-system/docker
+docker compose up -d
+```
+
+**测试采集引擎**：
+
+后台 → 系统设置 → 采集引擎 → 填入 URL → 单 Tier 测试 / 完整 fallback 测试。
+
+或者命令行：
+
+```bash
+docker compose exec backend python /app/../scripts/test_crawler_engine.py https://example.com/list --status
+docker compose exec backend python /app/../scripts/test_crawler_engine.py https://example.com/list
+docker compose exec backend python /app/../scripts/test_crawler_engine.py https://example.com/list --tier firecrawl
+```
+
+---
+
+## 4.6 创建 RBAC 用户与角色
+
+1. 后台 → 用户与权限 → 角色 tab → 新建角色 → 选择权限组合
+2. 后台 → 用户与权限 → 用户 tab → 新建用户 → 选择角色
+3. JWT 中携带 `permissions` 列表，前端会据此动态显示菜单
+
+**内置 4 个角色**（不可删除，可在其基础上分配给用户）：
+
+| 角色 | 适合 | 权限范围 |
+|------|------|---------|
+| `super_admin` | 技术管理员 | 全部 18 项 |
+| `editor` | 内容编辑 | 书籍、采集规则、清洗、分类、下载 |
+| `operator` | 采集操作员 | 查看 + 启停任务 |
+| `viewer` | 只读用户 | 全部查看 |
+
+---
+
+## 4.7 启用 SEO 检测
+
+后台 → SEO 检测 → 选择站点 → 查看检测详情：
+
+- **12 项自动检查**：site_title、site_description、site_keywords、canonical、geo_region、geo_lang、robots_txt、sitemap_enabled、favicon、head_inject、body_inject、logo
+- **评分**：0-100 分，绿（80+）/ 黄（60-79）/ 红（< 60）
+- **修复建议**：每项失败检查给出具体建议
+
+**生成 / 刷新 sitemap**：
+
+后台 → SEO 检测 → 重新生成 sitemap 按钮（所有站点）
+
+或定时任务（crontab 推荐）：
+
+```bash
+# 每天凌晨 3 点刷新所有站点的 sitemap
+0 3 * * * cd /opt/novel-system/docker && docker compose exec -T backend \
+  python manage.py refresh_sitemaps >> /var/log/novel-sitemaps.log 2>&1
+```
+
+**前台访问**：
+
+- 默认站点 sitemap: `http://site1.com/sitemap.xml`
+- 默认站点 RSS: `http://site1.com/rss.xml`
+- 单本书 RSS: `http://site1.com/book/<slug>/rss.xml`
+
+nginx 配置中已经把这些路由反代到 backend，开箱可用。
 
 ---
 

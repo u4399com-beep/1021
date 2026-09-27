@@ -33,3 +33,12 @@ export const downloadApi = {
 export const suggestApi = {
   get: (params) => http.get('/crawler/suggest/', { params }),
 }
+
+// -----------------------------------------------------------
+// Crawler engine — tier diagnostics + testing
+// -----------------------------------------------------------
+export const engineApi = {
+  status: () => http.get('/crawler/engine/status/'),
+  test: (data) => http.post('/crawler/engine/test/', data),
+  fetch: (data) => http.post('/crawler/engine/fetch/', data),
+}

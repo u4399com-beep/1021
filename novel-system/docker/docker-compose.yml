@@ -24,12 +24,17 @@ x-backend-env: &backend-env
   REDIS_HOST: redis
   REDIS_PORT: 6379
   REDIS_DB: 0
+  # Tier-1: Firecrawl
   FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:-}
+  FIRECRAWL_API_URL: ${FIRECRAWL_API_URL:-https://api.firecrawl.dev/v1}
+  # Tier-2: Browser Use
   BROWSER_USE_OPENAI_API_KEY: ${BROWSER_USE_OPENAI_API_KEY:-}
+  BROWSER_USE_MODEL: ${BROWSER_USE_MODEL:-gpt-4o-mini}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  # Tier-3: Playwright + Hyperbrowser
   HYPERBROWSER_API_KEY: ${HYPERBROWSER_API_KEY:-}
   PLAYWRIGHT_HEADLESS: ${PLAYWRIGHT_HEADLESS:-true}
   PLAYWRIGHT_PROXY: ${PLAYWRIGHT_PROXY:-}
-  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
 
 services:
   postgres:
