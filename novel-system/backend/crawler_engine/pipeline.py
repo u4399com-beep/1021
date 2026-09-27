@@ -77,9 +77,10 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
         for idx, ch_meta in enumerate(chapters, start=1):
             ch_url = ch_meta.get("url", "")
             ch_title = ch_meta.get("title", "")
+            vol_name = ch_meta.get("volume") or None
             if not ch_url:
                 continue
-            chapter = _crawl_chapter(task, book, ch_url, ch_title, idx, chapter_rule)
+            chapter = _crawl_chapter(task, book, ch_url, ch_title, idx, chapter_rule, volume_name=vol_name)
             if chapter:
                 saved_chapters.append(chapter)
             # honor pause/stop
@@ -104,6 +105,7 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
     # 6. Update stats + cover
     book.chapter_count = book.chapters.count()
     book.word_count = sum(c.word_count for c in book.chapters.all())
+    book.volume_count = book.volumes.count()
     if book.last_chapter_title:
         # take last chapter by order
         last = book.chapters.order_by("-order_index").first()
@@ -164,10 +166,89 @@ def _upsert_book(book_data: dict, *, source_url: str) -> Book | None:
 
 
 def _disorder(chapters: list[dict]) -> list[dict]:
-    """Shuffle chapter order — preserves a hidden original order in DB column."""
-    out = list(chapters)
-    random.shuffle(out)
+    """Shuffle chapter order — preserves a hidden original order in DB column.
+
+    Volumes are respected: chapters within the same volume are shuffled
+    only among themselves; they never cross volume boundaries. The `volume`
+    key (if present in the chapter dict) is used to group them.
+    """
+    if not chapters:
+        return chapters
+
+    # Group chapters by volume key (None / 0 / "" => "default" group)
+    grouped: dict[str, list[dict]] = {}
+    for ch in chapters:
+        vol_key = str(ch.get("volume") or ch.get("volume_id") or "default")
+        grouped.setdefault(vol_key, []).append(ch)
+
+    # Shuffle each group independently, then concatenate in original volume order
+    out: list[dict] = []
+    # Preserve insertion order of volumes (Python 3.7+ dict)
+    for vol_key, group_chapters in grouped.items():
+        shuffled = list(group_chapters)
+        random.shuffle(shuffled)
+        out.extend(shuffled)
     return out
+
+
+def _check_disorder(book: Book) -> dict:
+    """Verify the disorder reordering is correctly applied.
+
+    Returns:
+        {
+          "has_disorder": bool,        # whether any chapter has disorder_applied=True
+          "violates_volume_boundary": bool,  # if a chapter appears outside its volume
+          "total_chapters": int,
+          "volumes_count": int,
+          "by_volume": {vol_name: {total, disorder_count, ordered_correctly}},
+        }
+    """
+    result = {
+        "has_disorder": False,
+        "violates_volume_boundary": False,
+        "total_chapters": 0,
+        "volumes_count": 0,
+        "by_volume": {},
+    }
+
+    chapters = list(book.chapters.all().order_by("order_index"))
+    result["total_chapters"] = len(chapters)
+    result["volumes_count"] = book.volumes.count()
+
+    # Group chapters by volume, in order_index order
+    by_vol: dict[int | None, list[Chapter]] = {}
+    for ch in chapters:
+        by_vol.setdefault(ch.volume_id, []).append(ch)
+
+    # Check each volume's chapters form a contiguous block in the book's ordered list
+    sorted_chapters = chapters
+    contiguous_check_ok = True
+    seen_volumes = set()
+    last_volume_id = None
+    for ch in sorted_chapters:
+        if ch.volume_id != last_volume_id:
+            if ch.volume_id in seen_volumes:
+                contiguous_check_ok = False
+            seen_volumes.add(ch.volume_id)
+            last_volume_id = ch.volume_id
+    result["violates_volume_boundary"] = not contiguous_check_ok
+
+    # Per-volume summary
+    for vol_id, vol_chapters in by_vol.items():
+        vol = book.volumes.filter(id=vol_id).first() if vol_id else None
+        result["by_volume"][vol.name if vol else "未分卷"] = {
+            "total": len(vol_chapters),
+            "disorder_count": sum(1 for c in vol_chapters if c.disorder_applied),
+            "ordered_correctly": all(
+                c.order_index == idx + 1 for idx, c in enumerate(
+                    sorted(vol_chapters, key=lambda x: x.order_index)
+                )
+            ),
+        }
+        if any(c.disorder_applied for c in vol_chapters):
+            result["has_disorder"] = True
+
+    return result
 
 
 def _dedup_by_url(chapters: list[dict], book: Book) -> list[dict]:
@@ -196,8 +277,13 @@ def _dedup_by_title(chapters: list[dict], book: Book) -> list[dict]:
     return out
 
 
-def _crawl_chapter(task, book, url, title, idx, rule) -> Chapter | None:
-    """Fetch + parse + clean a single chapter."""
+def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = None) -> Chapter | None:
+    """Fetch + parse + clean a single chapter.
+
+    Args:
+        volume_name: if provided, link the chapter to a Volume with this name
+                     (creating it if it doesn't exist).
+    """
     try:
         html = fetch_page(url)
         parser = build_parser(rule.config)
@@ -220,6 +306,17 @@ def _crawl_chapter(task, book, url, title, idx, rule) -> Chapter | None:
             except Exception as e:
                 logger.warning(f"chapter txt write failed: {e!r}")
 
+        # Resolve volume FK if volume_name is given
+        volume_obj = None
+        if volume_name:
+            from apps.novel.models import Volume
+            # Find or create a volume by name; pick next order_index if new
+            vol_idx = book.volumes.count() + 1
+            volume_obj, _ = Volume.objects.get_or_create(
+                book=book, name=volume_name,
+                defaults={"order_index": vol_idx},
+            )
+
         chapter, _ = Chapter.objects.update_or_create(
             book=book, source_url=url,
             defaults={
@@ -227,6 +324,7 @@ def _crawl_chapter(task, book, url, title, idx, rule) -> Chapter | None:
                 "order_index": idx,
                 "source_order": idx,
                 "disorder_applied": task.enable_disorder,
+                "volume": volume_obj,
                 "content": content if storage in ("db", "both") else "",
                 "txt_path": txt_path,
                 "word_count": word_count,

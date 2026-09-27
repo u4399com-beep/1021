@@ -94,6 +94,7 @@ class Book(models.Model):
     keywords = models.JSONField("关键词", default=list, blank=True)
     word_count = models.BigIntegerField("字数", default=0)
     chapter_count = models.IntegerField("章节数", default=0)
+    volume_count = models.IntegerField("分卷数", default=0, help_text="自动计算")
 
     status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.ONGOING)
     finished_at = models.DateTimeField("完结时间", null=True, blank=True)
@@ -129,6 +130,54 @@ class Book(models.Model):
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
+    def update_volume_count(self):
+        """Recalculate the volume_count field."""
+        self.volume_count = self.volumes.count()
+        self.save(update_fields=["volume_count"])
+
+    def update_chapter_count(self):
+        """Recalculate the chapter_count field."""
+        self.chapter_count = self.chapters.count()
+        self.save(update_fields=["chapter_count"])
+
+
+class Volume(models.Model):
+    """A volume (分卷) — groups chapters within a book.
+
+    A book can have many volumes, each with many chapters. The disorder
+    reordering feature respects volume boundaries: chapters are first sorted
+    by (volume.order_index, chapter.order_index), so even when chapters are
+    shuffled, they remain within their volume.
+    """
+
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="volumes")
+    name = models.CharField("卷名", max_length=128, help_text="例：第一卷 初出茅庐")
+    intro = models.TextField("卷简介", blank=True)
+    order_index = models.IntegerField("卷序号", default=0, db_index=True,
+        help_text="第几卷，从 1 开始")
+    source_id = models.CharField("源分卷ID", max_length=128, blank=True)
+    chapter_count = models.IntegerField("章节计数", default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "novel_volume"
+        verbose_name = "分卷"
+        verbose_name_plural = verbose_name
+        unique_together = [("book", "order_index"), ("book", "name")]
+        ordering = ("order_index", "id")
+        indexes = [
+            models.Index(fields=["book", "order_index"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.book.title} - {self.name}"
+
+    def update_chapter_count(self):
+        self.chapter_count = self.chapters.count()
+        self.save(update_fields=["chapter_count"])
+
 
 class Chapter(models.Model):
     """Chapter of a book.
@@ -136,9 +185,17 @@ class Chapter(models.Model):
     `order_index` — display order.  When `disorder_applied` is True the order has
     been intentionally shuffled for the front (anti-duplicate-content SEO trick).
     The original order is preserved in `source_order`.
+
+    Volume: when `volume` is set, the chapter belongs to a Volume. The disorder
+    reordering respects volume boundaries — chapters shuffle WITHIN their volume
+    only, never across volumes. See `apps.crawler_engine.pipeline._disorder`.
     """
 
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="chapters")
+    volume = models.ForeignKey(
+        "Volume", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="chapters", help_text="所属分卷"
+    )
     title = models.CharField("标题", max_length=255)
     order_index = models.IntegerField("排序", db_index=True)
     source_order = models.IntegerField("原始排序", default=0)

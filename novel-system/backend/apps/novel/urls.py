@@ -8,6 +8,7 @@ from .views import (
     ChapterViewSet,
     SuggestKeywordViewSet,
     TagViewSet,
+    VolumeViewSet,
 )
 
 app_name = "novel"
@@ -18,6 +19,7 @@ router.register("authors", AuthorViewSet)
 router.register("tags", TagViewSet)
 router.register("books", BookViewSet)
 router.register("chapters", ChapterViewSet, basename="chapter")
+router.register("volumes", VolumeViewSet)
 router.register("suggest-keywords", SuggestKeywordViewSet)
 
 urlpatterns = [

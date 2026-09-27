@@ -29,6 +29,7 @@ book::
 toc::
     {
       "item_selector": {"type": "css", "expr": "ul.chapter-list li"},
+      "volume_selector": {"type": "css", "expr": ".volume, h2:contains('卷')"},   # optional
       "chapter_url":   {"type": "xpath", "expr": ".//a/@href"},
       "chapter_title": {"type": "css", "expr": "a::text"},
       "next_page":     {"type": "css", "expr": "a.next::attr(href)"}
@@ -45,7 +46,56 @@ from __future__ import annotations
 
 from typing import Any
 
+from lxml import html as lxml_html
+
 from .selectors import SelectorSpec, apply, _parse_html
+
+
+def _find_preceding_volume_name(el, volume_elements) -> str | None:
+    """For an element, find the closest preceding volume header by walking back.
+
+    Returns the text content of the volume header, or None if no volume
+    precedes this element.
+    """
+    if not volume_elements:
+        return None
+
+    # Get the absolute position of `el` and all volume elements in the document
+    # by counting preceding nodes.
+    # (Cheaper: just walk back through previous siblings + ancestors.)
+
+    # Strategy: build a list of (document_order, name) for volume_elements
+    # and find the volume whose document_order is just before el's.
+    # document_order = number of preceding elements.
+
+    def _doc_order(elem) -> int:
+        # Count of preceding elements in document order
+        count = 0
+        cur = elem
+        while cur is not None:
+            # Iterate through previous siblings
+            sib = cur.getprevious()
+            while sib is not None:
+                count += 1 + len(sib.xpath(".//*"))
+                sib = sib.getprevious()
+            cur = cur.getparent()
+            if cur is not None:
+                count += 1
+        return count
+
+    el_order = _doc_order(el)
+    closest = None
+    closest_order = -1
+    for vol_el in volume_elements:
+        vol_order = _doc_order(vol_el)
+        if vol_order < el_order and vol_order > closest_order:
+            closest = vol_el
+            closest_order = vol_order
+
+    if closest is None:
+        return None
+    # Extract text content
+    return closest.text_content().strip() if hasattr(closest, "text_content") else (closest.text or "").strip()
 
 
 class Parser:
@@ -106,26 +156,50 @@ class Parser:
         return out
 
     # ------------------------------------------------------------------
-    # Table of contents
+    # Table of contents — supports volume grouping
     # ------------------------------------------------------------------
     def _parse_toc(self, html: str, base_url: str) -> dict:
         item_spec = SelectorSpec.from_dict(self.config.get("item_selector", {}))
-        if not item_spec:
-            return {"chapters": []}
+        vol_spec = SelectorSpec.from_dict(self.config.get("volume_selector", {}))
         tree = _parse_html(html)
+
+        # If volume_selector is configured, we parse in two passes:
+        # Pass 1: find all volume headers and their positions in the DOM
+        # Pass 2: walk all chapter items, assign each to the volume header
+        #         that appears immediately before it in the document order.
         chapters = []
-        for el in (tree.cssselect(item_spec.expr) if hasattr(tree, "cssselect") else []):
-            ch = {}
-            for field in ("chapter_url", "chapter_title"):
-                spec_d = self.config.get(field)
-                if not spec_d:
-                    continue
-                spec = SelectorSpec.from_dict(spec_d)
-                spec.base_url = base_url
-                ch[field.replace("chapter_", "")] = apply(spec, el)
-            chapters.append(ch)
         next_spec = SelectorSpec.from_dict(self.config.get("next_page", {}))
         next_url = apply(next_spec, tree) if next_spec else None
+
+        if vol_spec and hasattr(tree, "cssselect"):
+            volume_elements = tree.cssselect(vol_spec.expr) if hasattr(tree, "cssselect") else []
+            # For each chapter item, find the closest preceding volume element
+            for el in (tree.cssselect(item_spec.expr) if hasattr(tree, "cssselect") else []):
+                ch = {}
+                for field in ("chapter_url", "chapter_title"):
+                    spec_d = self.config.get(field)
+                    if not spec_d:
+                        continue
+                    spec = SelectorSpec.from_dict(spec_d)
+                    spec.base_url = base_url
+                    ch[field.replace("chapter_", "")] = apply(spec, el)
+
+                # Find the closest preceding volume element by walking back through siblings
+                volume_name = _find_preceding_volume_name(el, volume_elements)
+                ch["volume"] = volume_name
+                chapters.append(ch)
+        else:
+            for el in (tree.cssselect(item_spec.expr) if hasattr(tree, "cssselect") else []):
+                ch = {}
+                for field in ("chapter_url", "chapter_title"):
+                    spec_d = self.config.get(field)
+                    if not spec_d:
+                        continue
+                    spec = SelectorSpec.from_dict(spec_d)
+                    spec.base_url = base_url
+                    ch[field.replace("chapter_", "")] = apply(spec, el)
+                chapters.append(ch)
+
         return {"chapters": chapters, "next_page": next_url}
 
     # ------------------------------------------------------------------

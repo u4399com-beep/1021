@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Author, Book, Category, Chapter, SuggestKeyword, Tag
+from .models import Author, Book, Category, Chapter, SuggestKeyword, Tag, Volume
 
 
 @admin.register(Category)
@@ -22,7 +22,7 @@ class AuthorAdmin(admin.ModelAdmin):
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
     list_display = (
-        "title", "author", "status", "chapter_count", "word_count",
+        "title", "author", "status", "chapter_count", "volume_count", "word_count",
         "rating", "is_published", "updated_at",
     )
     list_filter = ("status", "is_published", "categories", "is_deleted")
@@ -41,12 +41,22 @@ class BookAdmin(admin.ModelAdmin):
     mark_unpublished.short_description = "下架选中书籍"
 
 
+@admin.register(Volume)
+class VolumeAdmin(admin.ModelAdmin):
+    list_display = ("book", "name", "order_index", "chapter_count", "updated_at")
+    list_filter = ("book",)
+    search_fields = ("name", "intro")
+    raw_id_fields = ("book",)
+    ordering = ("book", "order_index")
+
+
 @admin.register(Chapter)
 class ChapterAdmin(admin.ModelAdmin):
-    list_display = ("book", "order_index", "title", "status", "word_count", "fetched_at")
-    list_filter = ("status",)
+    list_display = ("book", "volume", "order_index", "title", "status",
+                    "word_count", "disorder_applied", "fetched_at")
+    list_filter = ("status", "disorder_applied")
     search_fields = ("title", "content")
-    raw_id_fields = ("book",)
+    raw_id_fields = ("book", "volume")
 
 
 @admin.register(Tag)

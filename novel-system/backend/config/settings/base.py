@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "apps.sites",
     "apps.file_download",
     "apps.seo",
+    "apps.obfuscator",
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.obfuscator.middleware.ObfuscatorMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

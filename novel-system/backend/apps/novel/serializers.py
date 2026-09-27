@@ -1,9 +1,9 @@
-"""Novel serializers — Book / Category / Chapter / Tag."""
+"""Novel serializers — Book / Category / Chapter / Tag / Volume."""
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import Author, Book, Category, Chapter, SuggestKeyword, Tag
+from .models import Author, Book, Category, Chapter, SuggestKeyword, Tag, Volume
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -28,15 +28,29 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ChapterListSerializer(serializers.ModelSerializer):
+    volume_name = serializers.CharField(source="volume.name", read_only=True, default="")
+
     class Meta:
         model = Chapter
-        fields = ("id", "title", "order_index", "status", "fetched_at", "word_count")
+        fields = ("id", "title", "order_index", "volume", "volume_name",
+                  "status", "fetched_at", "word_count", "disorder_applied")
 
 
 class ChapterDetailSerializer(serializers.ModelSerializer):
+    volume_name = serializers.CharField(source="volume.name", read_only=True, default="")
+
     class Meta:
         model = Chapter
         fields = "__all__"
+
+
+class VolumeSerializer(serializers.ModelSerializer):
+    chapters_count = serializers.IntegerField(source="chapters.count", read_only=True)
+
+    class Meta:
+        model = Volume
+        fields = "__all__"
+        read_only_fields = ("created_at", "updated_at")
 
 
 class BookListSerializer(serializers.ModelSerializer):
@@ -48,7 +62,7 @@ class BookListSerializer(serializers.ModelSerializer):
         model = Book
         fields = (
             "id", "title", "slug", "author_name", "categories", "intro",
-            "cover_url_full", "status", "word_count", "chapter_count",
+            "cover_url_full", "status", "word_count", "chapter_count", "volume_count",
             "rating", "view_count", "updated_at",
         )
 
@@ -62,6 +76,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    volumes = VolumeSerializer(many=True, read_only=True)
     chapters = serializers.SerializerMethodField()
 
     class Meta:
@@ -69,7 +84,8 @@ class BookDetailSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_chapters(self, obj):
-        chapters = obj.chapters.all().order_by("order_index")
+        # When the book has volumes, group chapters by volume
+        chapters = obj.chapters.all().order_by("volume__order_index", "order_index")
         return ChapterListSerializer(chapters, many=True).data
 
 

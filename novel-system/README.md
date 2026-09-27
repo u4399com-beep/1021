@@ -326,6 +326,12 @@ npm run dev   # http://localhost:5173
 - [x] 采集任务定时调度（cron 表达式 + Celery beat + 后台编辑器 + 预览下次 5 次）
 - [x] EPUB 封面嵌入（自动从 book.cover 或 cover_url 下载并嵌入 metadata + spine）
 - [x] Hyperbrowser 代理池实测（会话池管理 + 手动创建/释放 + diagnostics + 后台管理）
+- [x] **页面结构混淆**：每页渲染生成唯一 HTML 结构（随机类名 / 属性乱序 / 隐形元素 / 注释噪声）
+- [x] **关键词/句子转码**：半角→全角 / 同形字 / 零宽字符 / 标点变体（按密度随机应用）
+- [x] **伪原创重写**：同义词替换 + 句型重排 + 干扰句插入 + RewriteRecord 指纹去重
+- [x] **分卷（Volume）系统**：Book → Volume → Chapter 层级，TOC 自动识别分卷标题
+- [x] **乱序重排按分卷分组**：章节只在分卷内打乱，绝不跨分卷，符合阅读逻辑
+- [x] **cunshu.la 采集规则**：`python manage.py seed_cunshu_la_rules` 一键导入 list/book/toc/chapter 4 套规则
 - [ ] Hyperbrowser 多 region 代理池切换
 - [ ] 代理池自动剔除低成功率代理
 - [ ] EPUB 内嵌水印图片

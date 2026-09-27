@@ -32,6 +32,7 @@ const routes = [
       { path: 'themes', name: 'themes', component: () => import('@/views/themes/Index.vue'), meta: { title: '主题模板', icon: 'Picture', perm: 'site.manage' } },
       { path: 'downloads', name: 'downloads', component: () => import('@/views/downloads/Index.vue'), meta: { title: '文件下载', icon: 'Download', perm: 'download.manage' } },
       { path: 'seo', name: 'seo', component: () => import('@/views/seo/Index.vue'), meta: { title: 'SEO 检测', icon: 'Search', perm: 'seo.view' } },
+      { path: 'obfuscator', name: 'obfuscator', component: () => import('@/views/obfuscator/Index.vue'), meta: { title: '混淆与伪原创', icon: 'Hide', perm: 'system.edit' } },
       { path: 'users', name: 'users', component: () => import('@/views/users/Index.vue'), meta: { title: '用户与权限', icon: 'UserFilled', perm: 'user.manage' } },
       { path: 'system', name: 'system', component: () => import('@/views/system/Index.vue'), meta: { title: '系统设置', icon: 'Setting', perm: 'system.view' } },
     ],
