@@ -1,0 +1,68 @@
+<!-- Book detail page — Classic Shelf theme -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ book.title }} - {{ book.author.name|default:"佚名" }} 著 - {{ site.name }}</title>
+  <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <meta name="keywords" content="{{ book.title }},{{ book.author.name|default:'' }},古典小说,墨香书阁">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "{{ book.title }}",
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:'' }}" },
+    "description": "{{ book.intro|escapejs }}"
+  }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/chapter.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="classic-body">
+  <div class="paper-texture"></div>
+  <header class="classic-header">
+    <div class="classic-container">
+      <h1 class="seal-logo">{{ site.name }}</h1>
+      <nav class="classic-nav">
+        <a href="/">书阁</a>
+        <a href="/book/{{ book.slug }}/toc">目录</a>
+      </nav>
+    </div>
+  </header>
+  <main class="classic-container">
+    <article class="book-detail-cn">
+      <div class="book-cover-cn">
+        <img src="{{ book.cover.url|default:book.cover_url }}" alt="{{ book.title }}">
+        <div class="scroll-deco"></div>
+      </div>
+      <div class="book-meta-cn">
+        <h1 class="book-title-big">{{ book.title }}</h1>
+        <p class="meta-line">
+          <span class="label">著者</span> {{ book.author.name|default:"佚名" }}
+          <span class="divider">·</span>
+          <span class="label">状态</span> <span class="status status-{{ book.status }}">{{ book.get_status_display }}</span>
+          <span class="divider">·</span>
+          <span class="label">字数</span> {{ book.word_count }}
+        </p>
+        <p class="meta-line">
+          <span class="label">类别</span>
+          {% for c in book.categories.all %}<a href="/category/{{ c.slug }}" class="cat-link">{{ c.name }}</a>{% if not forloop.last %}·{% endif %}{% endfor %}
+        </p>
+        <div class="intro-cn">
+          <h3>内容简介</h3>
+          <p>{{ book.intro|linebreaksbr }}</p>
+        </div>
+        <div class="actions-cn">
+          <a href="/book/{{ book.slug }}/chapter/1" class="btn-cn btn-primary">开卷阅读</a>
+          <a href="/book/{{ book.slug }}/toc" class="btn-cn btn-secondary">细看目录</a>
+          <a href="/download/{{ book.slug }}" class="btn-cn btn-tertiary">下载书卷</a>
+        </div>
+      </div>
+    </article>
+  </main>
+  {{ site.body_inject|safe }}
+</body>
+</html>

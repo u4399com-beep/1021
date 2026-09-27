@@ -1,0 +1,21 @@
+<!-- Book detail placeholder — minimal_rank. Full template lives under assets/style.css extensions to be filled in subsequent iterations. -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ book.title }} - {{ site.name }}</title>
+  <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <main style="max-width: 800px; margin: 40px auto; padding: 24px;">
+    <h1>{{ book.title }}</h1>
+    <p>作者: {{ book.author.name|default:"佚名" }} | 状态: {{ book.get_status_display }}</p>
+    <p class="intro">{{ book.intro|linebreaksbr }}</p>
+    <a href="/book/{{ book.slug }}/chapter/1">开始阅读</a>
+  </main>
+  {{ site.body_inject|safe }}
+</body>
+</html>

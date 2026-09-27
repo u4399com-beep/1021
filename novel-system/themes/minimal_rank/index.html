@@ -1,0 +1,91 @@
+<!-- Minimal Rank — 极简榜单：无尽列表+评分+标签云+排行榜，类似 Goodreads -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site.site_title|default:"书榜 · 极简小说排行榜" }}</title>
+  <meta name="description" content="{{ site.site_description|default:'书榜 · 评分排行榜 · 标签云 · 极简小说站' }}">
+  <meta name="keywords" content="{{ site.site_keywords|default:'小说,排行榜,评分,书榜' }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="rank-body">
+  <header class="rank-header">
+    <div class="rank-container">
+      <a href="/" class="brand">{{ site.name|default:"书榜" }}</a>
+      <nav>
+        <a href="/">首页</a>
+        <a href="/rank/all">总榜</a>
+        <a href="/rank/week">周榜</a>
+        <a href="/rank/month">月榜</a>
+        <a href="/tags">标签云</a>
+      </nav>
+      <form class="search" action="/search" method="get">
+        <input type="text" name="q" placeholder="书名 / 作者 / 标签">
+      </form>
+    </div>
+  </header>
+
+  <main class="rank-container">
+    <aside class="tag-cloud">
+      <h3>标签云</h3>
+      <div class="tags">
+        {% for tag in tags %}
+        <a href="/tag/{{ tag.name }}" style="font-size: {{ tag.weight|floatformat:'0'|add:12 }}px">{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+    </aside>
+
+    <section class="rank-main">
+      <div class="rank-tabs">
+        <a href="/rank/week" class="active">本周榜</a>
+        <a href="/rank/month">本月榜</a>
+        <a href="/rank/all">总榜</a>
+      </div>
+
+      <ol class="rank-list">
+        {% for book in ranked_books %}
+        <li class="rank-item">
+          <span class="rank-num {{ forloop.counter|divisibleby:3|yesno:'top3,' }}">{{ forloop.counter|add:offset }}</span>
+          <div class="rank-cover">
+            <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+          </div>
+          <div class="rank-info">
+            <h3><a href="/book/{{ book.slug }}">{{ book.title }}</a></h3>
+            <p class="author-line">
+              <span class="author">{{ book.author.name|default:"佚名" }}</span>
+              <span class="rating">★ {{ book.rating|floatformat:1 }}</span>
+              <span class="status status-{{ book.status }}">{{ book.get_status_display }}</span>
+            </p>
+            <p class="intro">{{ book.intro|truncatechars:120 }}</p>
+            <p class="tags-line">
+              {% for c in book.categories.all %}<a href="/category/{{ c.slug }}" class="cat-tag">{{ c.name }}</a>{% endfor %}
+              {% for t in book.tags.all|slice:":3" %}<a href="/tag/{{ t.name }}" class="book-tag">{{ t.name }}</a>{% endfor %}
+            </p>
+          </div>
+          <div class="rank-stats">
+            <p class="views">{{ book.view_count }} 阅读</p>
+            <p class="chapters">{{ book.chapter_count }} 章</p>
+            <p class="updated">{{ book.updated_at|date:"Y-m-d" }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+
+      <div class="load-more">
+        <a href="?page={{ next_page|default:2 }}">加载更多 ↓</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rank-footer">
+    <div class="rank-container">
+      <p>&copy; {{ now|date:"Y" }} {{ site.name|default:"书榜" }} · 极简排行榜 · All rights reserved.</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>

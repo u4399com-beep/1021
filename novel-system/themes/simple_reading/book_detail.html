@@ -1,0 +1,83 @@
+<!-- Book detail page — Simple Reading theme -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ book.title }} - {{ book.author.name|default:"佚名" }} - {{ site.name }}</title>
+  <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <meta name="keywords" content="{{ book.title }},{{ book.author.name|default:'' }},{% for t in book.tags.all %}{{ t.name }},{% endfor %}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "{{ book.title }}",
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:'' }}" },
+    "description": "{{ book.intro|escapejs }}",
+    "inLanguage": "zh-CN",
+    "bookFormat": "https://schema.org/BookFormatType/AudiobookFormat"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1><a href="/">{{ site.name }}</a></h1>
+      <nav>
+        <a href="/">首页</a>
+        <a href="/category/xuanhuan">玄幻</a>
+        <a href="/category/qihuan">奇幻</a>
+        <a href="/category/wuxia">武侠</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <article class="book-detail">
+      <div class="book-cover">
+        <img src="{{ book.cover.url|default:book.cover_url }}" alt="{{ book.title }}">
+      </div>
+      <div class="book-info">
+        <h1>{{ book.title }}</h1>
+        <p class="meta">
+          作者: <a href="/search?q={{ book.author.name|default:'' }}">{{ book.author.name|default:"佚名" }}</a> |
+          状态: <span class="status-{{ book.status }}">{{ book.get_status_display }}</span> |
+          字数: {{ book.word_count }} |
+          章节数: {{ book.chapter_count }}
+        </p>
+        <p class="categories">
+          分类: {% for c in book.categories.all %}<a href="/category/{{ c.slug }}">{{ c.name }}</a>{% if not forloop.last %} / {% endif %}{% endfor %}
+        </p>
+        <p class="tags">
+          标签: {% for t in book.tags.all %}<a href="/tag/{{ t.name }}">{{ t.name }}</a>{% if not forloop.last %} / {% endif %}{% endfor %}
+        </p>
+        <div class="intro">
+          <h3>简介</h3>
+          <p>{{ book.intro|linebreaksbr }}</p>
+        </div>
+        <div class="actions">
+          <a href="/book/{{ book.slug }}/chapter/1" class="btn-primary">开始阅读</a>
+          <a href="/book/{{ book.slug }}/toc" class="btn-secondary">查看目录</a>
+          <a href="/download/{{ book.slug }}" class="btn-tertiary">下载TXT</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="latest-chapters">
+      <h2>最新章节</h2>
+      <ul>
+        {% for ch in latest_chapters %}
+        <li><a href="/book/{{ book.slug }}/chapter/{{ ch.order_index }}">{{ ch.title }}</a><span>{{ ch.fetched_at|date:"Y-m-d H:i" }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+  </main>
+  {{ site.body_inject|safe }}
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!-- Chapter reading placeholder — magazine_modern -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ chapter.title }} - {{ book.title }} - {{ site.name }}</title>
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <main style="max-width: 800px; margin: 40px auto; padding: 24px;">
+    <h1>{{ chapter.title }}</h1>
+    <article>{{ chapter.content|safe }}</article>
+    <nav>
+      {% if prev_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ prev_chapter.order_index }}">上一章</a>{% endif %}
+      <a href="/book/{{ book.slug }}/toc">目录</a>
+      {% if next_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ next_chapter.order_index }}">下一章</a>{% endif %}
+    </nav>
+  </main>
+  {{ site.body_inject|safe }}
+</body>
+</html>

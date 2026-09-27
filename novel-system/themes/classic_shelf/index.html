@@ -1,0 +1,89 @@
+<!-- ============================================================
+     Classic Shelf — 古典书架主题：木纹背景+宋体+横向卷轴元素，国风
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site.site_title|default:"墨香书阁 - 古典小说在线阅读" }}</title>
+  <meta name="description" content="{{ site.site_description|default:'墨香书阁，汇聚古典小说、武侠仙侠，竹简木牍之上的网络书阁。' }}">
+  <meta name="keywords" content="{{ site.site_keywords|default:'古典小说,武侠,仙侠,古风,墨香书阁' }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <meta name="geo.region" content="{{ site.geo_region|default:'CN' }}">
+  <meta name="language" content="{{ site.geo_lang|default:'zh-CN' }}">
+  <meta property="og:title" content="{{ site.site_title }}">
+  <meta property="og:type" content="website">
+
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="classic-body">
+  <div class="paper-texture"></div>
+
+  <header class="classic-header">
+    <div class="classic-container">
+      <h1 class="seal-logo">{{ site.name|default:"墨香书阁" }}</h1>
+      <p class="tagline">墨香浮动 · 卷帙浩繁</p>
+      <nav class="classic-nav">
+        <a href="/">书阁</a>
+        <a href="/category/wuxia">武侠</a>
+        <a href="/category/xianxia">仙侠</a>
+        <a href="/category/history">历史</a>
+        <a href="/category/gudian">古典</a>
+        <a href="/search">寻书</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="classic-container">
+    <section class="featured-scroll">
+      <h2 class="section-title">卷首推荐</h2>
+      <div class="scroll-shelf">
+        {% for book in featured_books %}
+        <div class="scroll-book">
+          <a href="/book/{{ book.slug }}">
+            <div class="book-cover-wrap">
+              <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+              <div class="scroll-edge"></div>
+            </div>
+            <div class="book-info-cn">
+              <h3 class="book-title-cn">{{ book.title }}</h3>
+              <p class="author-cn">{{ book.author.name|default:"佚名" }} 著</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="category-shelves">
+      {% for cat, books in shelves %}
+      <div class="shelf">
+        <h2 class="shelf-title">
+          <span class="title-bar"></span>{{ cat.name }}
+        </h2>
+        <div class="shelf-books">
+          {% for book in books %}
+          <a href="/book/{{ book.slug }}" class="shelf-book">
+            <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+            <h4>{{ book.title }}</h4>
+            <p>{{ book.author.name|default:"佚名" }}</p>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+  </main>
+
+  <footer class="classic-footer">
+    <div class="classic-container">
+      <p>墨香书阁 · 仿古书阁 · 网罗天下奇书</p>
+      <p>&copy; {{ now|date:"Y" }} {{ site.name }} · 备案号： 沪ICP备XXXXXXXX号</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>

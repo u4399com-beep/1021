@@ -1,0 +1,3 @@
+# Default site placeholder — replaced by Sites app via generate_nginx_conf command
+# Each Site record produces one .conf file here, see
+# `apps/sites/management/commands/generate_nginx_conf.py`
