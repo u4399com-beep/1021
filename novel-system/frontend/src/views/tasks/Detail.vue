@@ -52,6 +52,47 @@
             </el-form-item>
           </el-form>
         </el-card>
+
+        <el-card shadow="never" class="mt-4">
+          <template #header>定时调度（Cron）</template>
+          <el-form label-width="120px" :model="schedule">
+            <el-form-item label="启用调度">
+              <el-switch v-model="schedule.enabled" />
+            </el-form-item>
+            <el-form-item label="Cron 表达式">
+              <el-input v-model="schedule.cron" placeholder="0 3 * * * （每天 3 点）" />
+              <div class="cron-hint">
+                格式：minute hour day-of-month month day-of-week
+                <a href="https://crontab.guru/" target="_blank">参考</a>
+              </div>
+            </el-form-item>
+            <el-form-item label="最大次数">
+              <el-input-number v-model="schedule.max_runs" :min="0" :max="9999" />
+              <div class="cron-hint">0 = 无限</div>
+            </el-form-item>
+            <el-form-item v-if="task.schedule_next_run" label="下次执行">
+              <span>{{ task.schedule_next_run }}</span>
+            </el-form-item>
+            <el-form-item v-if="task.schedule_last_run" label="上次执行">
+              <span>{{ task.schedule_last_run }}</span>
+            </el-form-item>
+            <el-form-item label="已执行次数">
+              <span>{{ task.schedule_run_count || 0 }}</span>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="saveSchedule">保存调度</el-button>
+              <el-button @click="previewSchedule">预览下次 5 次</el-button>
+            </el-form-item>
+          </el-form>
+          <el-card v-if="schedulePreview.length" shadow="never" class="mt-4">
+            <template #header>下次 5 次执行</template>
+            <ul style="list-style: none; padding: 0;">
+              <li v-for="r in schedulePreview" :key="r" style="padding: 6px 0; border-bottom: 1px dashed #ebeef5;">
+                {{ r }}
+              </li>
+            </ul>
+          </el-card>
+        </el-card>
       </el-col>
     </el-row>
 
@@ -85,6 +126,10 @@ const progress = ref({ total: 0, processed: 0, success: 0, failed: 0, skipped: 0
 
 const params = reactive({ threads_min: 2, threads_max: 5, interval_min: 1, interval_max: 3 })
 
+// Schedule (cron)
+const schedule = reactive({ enabled: false, cron: '0 3 * * *', max_runs: 0 })
+const schedulePreview = ref([])
+
 const statusMap = { draft: '草稿', queued: '已入队', running: '运行中', paused: '已暂停', stopped: '已停止', done: '完成', error: '失败' }
 const modeMap = { full: '完全覆盖', incremental: '增量更新' }
 const storageMap = { db: '数据库', txt: 'TXT文件', both: '两者' }
@@ -111,6 +156,10 @@ async function loadTask() {
       total: data.total_items, processed: data.processed_items,
       success: data.success_items, failed: data.failed_items, skipped: data.skipped_items,
     }
+    // Sync schedule form
+    schedule.enabled = data.schedule_enabled || false
+    schedule.cron = data.schedule_cron || '0 3 * * *'
+    schedule.max_runs = data.schedule_max_runs || 0
   } finally { loading.value = false }
 }
 
@@ -148,6 +197,37 @@ async function updateParams() {
   loadTask()
 }
 
+async function saveSchedule() {
+  try {
+    await taskApi.setSchedule(taskId, {
+      enabled: schedule.enabled,
+      cron: schedule.cron,
+      max_runs: schedule.max_runs,
+    })
+    ElMessage.success(schedule.enabled ? '调度已启用' : '调度已禁用')
+    loadTask()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || '保存失败')
+  }
+}
+
+async function previewSchedule() {
+  try {
+    const { data } = await taskApi.schedulePreview(taskId)
+    if (data.error) {
+      ElMessage.error(data.error)
+      schedulePreview.value = []
+      return
+    }
+    schedulePreview.value = data.next_runs || []
+    if (!schedulePreview.value.length && data.note) {
+      ElMessage.info(data.note)
+    }
+  } catch (e) {
+    ElMessage.error('预览失败')
+  }
+}
+
 let timer
 onMounted(() => {
   loadTask()
@@ -161,3 +241,11 @@ onMounted(() => {
 })
 onUnmounted(() => clearInterval(timer))
 </script>
+
+<style scoped lang="scss">
+.cron-hint {
+  font-size: 11px; color: #909399; line-height: 1.6;
+  margin-top: 4px;
+  a { color: #409eff; }
+}
+</style>

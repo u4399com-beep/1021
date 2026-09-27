@@ -42,3 +42,6 @@ export const engineApi = {
   test: (data) => http.post('/crawler/engine/test/', data),
   fetch: (data) => http.post('/crawler/engine/fetch/', data),
 }
+
+// Proxy pool + Hyperbrowser (re-exported from task.js)
+export { proxyApi, hyperbrowserApi } from '@/api/task'

@@ -102,8 +102,41 @@ def build_epub(book, template: DownloadTemplate) -> Path:
     book_epub = epub.EpubBook()
     book_epub.set_title(book.title)
     book_epub.set_language("zh-CN")
+    book_epub.set_identifier(f"novel-system-{book.id}")
     if book.author:
         book_epub.add_author(book.author.name)
+
+    # ─── 封面嵌入 ─────────────────────────────────────────────
+    cover_path = _resolve_cover_image(book)
+    cover_xhtml = None
+    if cover_path:
+        with open(cover_path, "rb") as f:
+            cover_bytes = f.read()
+        cover_filename = "cover.webp" if str(cover_path).endswith(".webp") else "cover.jpg"
+        cover_mime = "image/webp" if cover_filename.endswith(".webp") else "image/jpeg"
+        try:
+            book_epub.set_cover("cover.jpg", cover_bytes)
+        except Exception:
+            img_item = epub.EpubItem(
+                uid="cover-image",
+                file_name=f"images/{cover_filename}",
+                media_type=cover_mime,
+                content=cover_bytes,
+            )
+            book_epub.add_item(img_item)
+
+        # Optional cover XHTML page (some readers prefer)
+        try:
+            cover_xhtml = epub.EpubCoverHtml(file_name="cover.xhtml")
+            cover_xhtml.content = (
+                '<html xmlns="http://www.w3.org/1999/xhtml">'
+                '<head><title>Cover</title></head>'
+                f'<body><img src="images/{cover_filename}" alt="cover" '
+                'style="width:100%;height:auto;"/></body></html>'
+            )
+            book_epub.add_item(cover_xhtml)
+        except Exception:
+            pass
 
     # Pre-frontmatter
     if template.book_preface:
@@ -126,13 +159,61 @@ def build_epub(book, template: DownloadTemplate) -> Path:
         book_epub.add_item(c)
         toc.append(c)
     book_epub.toc = toc
-    book_epub.spine = ["nav"] + toc
+
+    # spine — put cover first if available, then nav, then chapters
+    if cover_xhtml:
+        book_epub.spine = [cover_xhtml, "nav"] + toc
+    else:
+        book_epub.spine = ["nav"] + toc
 
     style = "body{font-family:'Noto Serif SC',serif;line-height:1.8;}"
-    book_epub.add_item(epub.EpubNavi)
+    book_epub.add_item(epub.EpubNavi())
     book_epub.add_item(epub.EpubItem(file_name="style.css", media_type="text/css", content=style))
     epub.write_epub(str(out_path), book_epub, {})
     return out_path
+
+
+def _resolve_cover_image(book) -> Path | None:
+    """Return a local Path to the book cover image, or None.
+
+    Priority:
+      1. book.cover (ImageField) — if uploaded locally
+      2. book.cover_url — downloaded to a cache (reused if exists)
+    """
+    if book.cover:
+        try:
+            p = Path(book.cover.path)
+            if p.exists():
+                return p
+        except Exception:
+            pass
+
+    if not book.cover_url:
+        return None
+
+    import httpx
+    import os
+    from urllib.parse import urlparse
+
+    cache_dir = Path(settings.CRAWLER["COVER_DIR"])
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    ext = os.path.splitext(urlparse(book.cover_url).path)[1] or ".jpg"
+    if ext.lower() not in (".jpg", ".jpeg", ".png", ".webp", ".gif"):
+        ext = ".jpg"
+    cache_path = cache_dir / f"book_{book.id}{ext.lower()}"
+    if cache_path.exists():
+        return cache_path
+
+    try:
+        with httpx.Client(timeout=30, follow_redirects=True) as cli:
+            r = cli.get(book.cover_url, headers={"User-Agent": "Mozilla/5.0"})
+            if r.status_code != 200:
+                return None
+            cache_path.write_bytes(r.content)
+            return cache_path
+    except Exception as e:
+        print(f"[epub cover download failed] {e!r}")
+        return None
 
 
 def build_download(book, template: DownloadTemplate, user=None) -> DownloadRecord:

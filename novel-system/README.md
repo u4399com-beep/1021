@@ -323,6 +323,12 @@ npm run dev   # http://localhost:5173
 - [x] RBAC 多用户权限（4 个内置角色 + 18 个权限码 + 用户管理面板）
 - [x] sitemap.xml 自动生成 + RSS 输出（站点级 RSS + 单本书章节 RSS）
 - [x] SEO 自动检测面板（12 项检查：TDK / GEO / canonical / robots / sitemap / favicon / inject 等）
-- [ ] 增加 Hyperbrowser 代理池实测
-- [ ] 增加 EPUB 封面图嵌入
-- [ ] 增加采集任务定时调度（cron 表达式）
+- [x] 采集任务定时调度（cron 表达式 + Celery beat + 后台编辑器 + 预览下次 5 次）
+- [x] EPUB 封面嵌入（自动从 book.cover 或 cover_url 下载并嵌入 metadata + spine）
+- [x] Hyperbrowser 代理池实测（会话池管理 + 手动创建/释放 + diagnostics + 后台管理）
+- [ ] Hyperbrowser 多 region 代理池切换
+- [ ] 代理池自动剔除低成功率代理
+- [ ] EPUB 内嵌水印图片
+- [ ] 任务调度优先级（多任务并发限制）
+
+**手动验证指南**：见 [docs/OPERATIONS.md](docs/OPERATIONS.md)（包含 5 大场景的命令行 + 后台浏览器双路径验证步骤）。

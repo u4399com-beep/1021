@@ -88,6 +88,21 @@ class CrawlerTask(models.Model):
     status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.DRAFT)
     celery_task_id = models.CharField("Celery Task ID", max_length=128, blank=True)
 
+    # ─── 调度配置 ────────────────────────────────────────────────
+    # 启用后，任务会按 cron 表达式自动调度执行
+    schedule_enabled = models.BooleanField("启用定时调度", default=False)
+    schedule_cron = models.CharField(
+        "Cron 表达式",
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="标准 5 段 cron：minute hour day-of-month month day-of-week。例：'0 3 * * *' = 每天 3 点"
+    )
+    schedule_next_run = models.DateTimeField("下次执行时间", null=True, blank=True)
+    schedule_last_run = models.DateTimeField("上次执行时间", null=True, blank=True)
+    schedule_max_runs = models.IntegerField("最大执行次数", default=0, help_text="0 = 无限")
+    schedule_run_count = models.IntegerField("已执行次数", default=0)
+
     # 进度统计
     total_items = models.IntegerField("总数", default=0)
     processed_items = models.IntegerField("已处理", default=0)

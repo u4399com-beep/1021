@@ -1,11 +1,19 @@
 """反反爬资源池 — UA / Cookie / 代理。
 
-UA 池 / Cookie 池基于数据库表，便于后台管理。代理池可对接第三方服务。
+UA 池 / Cookie 池基于数据库表，便于后台管理。代理池可对接第三方服务
+（Hyperbrowser 的 sessions 池或自维护代理 IP 池）。
+
+ProxyPool 路由策略：
+  - 若 Hyperbrowser 启用：自动选择一个 HyperbrowserProxy 池子，
+    在 Playwright 中通过 CDP 连接 Hyperbrowser 的会话端点。
+  - 否则：从 ProxyPool 表中按优先级+轮询取一个 HTTP/HTTPS 代理。
 """
 from __future__ import annotations
 
+import json
 import random
 import threading
+import time
 from typing import Optional
 
 from django.core.cache import cache
@@ -23,9 +31,12 @@ DEFAULT_UAS = [
 _DEFAULT_COOKIE_LOCK = threading.Lock()
 _DEFAULT_COOKIES: list[dict] = []
 
+# In-memory round-robin pointer for ProxyPool
+_PROXY_RR = 0
+_PROXY_LOCK = threading.Lock()
+
 
 def get_user_agent() -> str:
-    """Return a random UA — try DB-backed UA pool first."""
     cached = cache.get("uas_pool")
     if cached:
         return random.choice(cached)
@@ -33,17 +44,158 @@ def get_user_agent() -> str:
 
 
 def get_cookie() -> Optional[dict]:
-    """Return a random cookie dict — try DB-backed cookie pool first."""
     cached = cache.get("cookies_pool")
     if cached:
         return random.choice(cached)
     return None
 
 
+# ------------------------------------------------------------------
+# Proxy pool
+# ------------------------------------------------------------------
 def get_proxy() -> Optional[str]:
-    """Return a proxy URL — pulls from DB / env. Returns None if no proxy."""
+    """Return a proxy URL — try DB-backed ProxyPool first, fall back to env.
+
+    Returns None if no proxy is configured.
+    """
+    global _PROXY_RR
+
+    # Try the ProxyPool DB table first
+    try:
+        from apps.crawler.models import ProxyPool  # lazy import to avoid circular
+
+        active = list(ProxyPool.objects.filter(is_active=True).order_by("-priority", "id"))
+        if active:
+            with _PROXY_LOCK:
+                # Round-robin across active proxies
+                proxy = active[_PROXY_RR % len(active)]
+                _PROXY_RR += 1
+            return proxy.url
+    except Exception:
+        pass
+
     cached = cache.get("proxy_pool")
     if cached:
         return random.choice(cached)
     from django.conf import settings
     return settings.CRAWLER.get("PLAYWRIGHT_PROXY") or None
+
+
+# ------------------------------------------------------------------
+# Hyperbrowser proxy pool management
+# ------------------------------------------------------------------
+_HYPERBROWSER_SESSION_CACHE_KEY = "hyperbrowser:sessions"
+_HYPERBROWSER_SESSION_TTL = 90  # seconds — Hyperbrowser sessions last ~5min by default
+
+
+def get_hyperbrowser_session():
+    """Return a Hyperbrowser CDP URL (create or reuse a cached one).
+
+    Returns: dict with keys:
+        cdp_url, session_id, region, created_at, expires_at
+    Raises: RuntimeError if HYPERBROWSER_API_KEY is not configured.
+    """
+    import httpx
+    from django.conf import settings
+
+    api_key = settings.CRAWLER.get("HYPERBROWSER_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("HYPERBROWSER_API_KEY not configured")
+
+    # Check cache first — share sessions across worker processes
+    cached = cache.get(_HYPERBROWSER_SESSION_CACHE_KEY)
+    if cached and isinstance(cached, list) and cached:
+        # Pick the least-recently-used session
+        cached.sort(key=lambda s: s.get("last_used_at", 0))
+        return cached[0]
+
+    # Create a new session
+    create_url = "https://api.hyperbrowser.dev/v1/sessions"
+    payload = {
+        "sessionOptions": {
+            "solve_captchas": True,
+            "proxy": "auto",  # Hyperbrowser's residential pool
+            # Additional anti-bot options:
+            "_stealth": True,
+        }
+    }
+    r = httpx.post(
+        create_url,
+        headers={"x-api-key": api_key, "Content-Type": "application/json"},
+        json=payload,
+        timeout=30,
+    )
+    if r.status_code != 200:
+        raise RuntimeError(f"hyperbrowser: create session failed: {r.status_code} {r.text}")
+    data = r.json()
+    cdp_url = data.get("cdpUrl") or data.get("wsEndpoint")
+    if not cdp_url:
+        raise RuntimeError("hyperbrowser: no cdpUrl in response")
+
+    session = {
+        "session_id": data.get("id") or data.get("sessionId"),
+        "cdp_url": cdp_url,
+        "region": data.get("region", "auto"),
+        "created_at": time.time(),
+        "expires_at": time.time() + _HYPERBROWSER_SESSION_TTL,
+        "last_used_at": time.time(),
+    }
+    _cache_session(session)
+    return session
+
+
+def _cache_session(session: dict) -> None:
+    """Append a session to the in-cache pool, keeping at most 5 sessions."""
+    cached = cache.get(_HYPERBROWSER_SESSION_CACHE_KEY) or []
+    cached = [s for s in cached if s.get("expires_at", 0) > time.time()]
+    cached.append(session)
+    if len(cached) > 5:
+        cached = cached[-5:]
+    cache.set(_HYPERBROWSER_SESSION_CACHE_KEY, cached, _HYPERBROWSER_SESSION_TTL)
+
+
+def list_hyperbrowser_sessions() -> list[dict]:
+    """Return cached Hyperbrowser sessions (for diagnostics)."""
+    cached = cache.get(_HYPERBROWSER_SESSION_CACHE_KEY) or []
+    return [s for s in cached if s.get("expires_at", 0) > time.time()]
+
+
+def release_hyperbrowser_session(session_id: str) -> None:
+    """Mark a session as released (and optionally end it server-side)."""
+    import httpx
+    from django.conf import settings
+
+    api_key = settings.CRAWLER.get("HYPERBROWSER_API_KEY", "")
+    cached = cache.get(_HYPERBROWSER_SESSION_CACHE_KEY) or []
+    cached = [s for s in cached if s.get("session_id") != session_id]
+    cache.set(_HYPERBROWSER_SESSION_CACHE_KEY, cached, _HYPERBROWSER_SESSION_TTL)
+
+    if api_key and session_id:
+        try:
+            httpx.delete(
+                f"https://api.hyperbrowser.dev/v1/sessions/{session_id}",
+                headers={"x-api-key": api_key},
+                timeout=10,
+            )
+        except Exception:
+            pass
+
+
+def hyperbrowser_diagnostics() -> dict:
+    """Return diagnostic info about Hyperbrowser config + active sessions."""
+    from django.conf import settings
+
+    api_key = settings.CRAWLER.get("HYPERBROWSER_API_KEY", "")
+    sessions = list_hyperbrowser_sessions() if api_key else []
+    return {
+        "configured": bool(api_key),
+        "active_sessions": len(sessions),
+        "sessions": [
+            {
+                "session_id": s.get("session_id"),
+                "region": s.get("region"),
+                "expires_in_seconds": int(s.get("expires_at", 0) - time.time()),
+            }
+            for s in sessions
+        ],
+    }

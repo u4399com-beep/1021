@@ -56,6 +56,12 @@ def run_crawler_task(self, task_id: int):
     except Exception as e:
         task.mark_error(repr(e))
         logger.exception(f"task {task_id} prepare error")
+        # Even on error, record the run if this was a scheduled invocation
+        try:
+            from .schedule import record_run
+            record_run(task)
+        except Exception:
+            pass
         return
 
     # Dispath with a Celery group — each URL becomes a child task
@@ -90,6 +96,13 @@ def run_crawler_task(self, task_id: int):
     if task.status == "running":
         task.mark_done()
     _log(task, f"finished: success={task.success_items} failed={task.failed_items} skipped={task.skipped_items}")
+
+    # Record scheduled run completion
+    try:
+        from .schedule import record_run
+        record_run(task)
+    except Exception as e:
+        logger.warning(f"failed to record_run for task {task.id}: {e!r}")
 
 
 @celery_app.task(bind=True, name="apps.crawler_tasks.tasks.crawl_one_url")

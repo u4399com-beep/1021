@@ -82,6 +82,81 @@ class CrawlerTaskViewSet(
         task.save(update_fields=["threads_min", "threads_max", "interval_min", "interval_max"])
         return Response({"status": "updated", "task": CrawlerTaskSerializer(task).data})
 
+    # ------------------------------------------------------------------
+    # Schedule management (cron)
+    # ------------------------------------------------------------------
+    @action(detail=True, methods=["post"])
+    def set_schedule(self, request, pk=None):
+        """启用 / 修改定时调度。
+
+        请求体:
+            enabled: bool
+            cron: "0 3 * * *"  (5-segment cron, ignored if enabled=false)
+            max_runs: int (0 = unlimited)
+        """
+        from .schedule import CronValidationError, sync_schedule
+
+        task = self.get_object()
+        enabled = bool(request.data.get("enabled", False))
+        cron = (request.data.get("cron") or "").strip()
+        max_runs = int(request.data.get("max_runs", 0) or 0)
+
+        task.schedule_enabled = enabled
+        task.schedule_cron = cron if enabled else task.schedule_cron
+        task.schedule_max_runs = max_runs
+
+        if enabled:
+            try:
+                sync_schedule(task)
+            except CronValidationError as e:
+                return Response({"error": str(e)}, status=400)
+        else:
+            from .schedule import disable_schedule
+            disable_schedule(task)
+
+        return Response({
+            "status": "scheduled" if enabled else "unscheduled",
+            "cron": task.schedule_cron,
+            "next_run": task.schedule_next_run,
+        })
+
+    @action(detail=True, methods=["post"])
+    def disable_schedule(self, request, pk=None):
+        from .schedule import disable_schedule
+        task = self.get_object()
+        disable_schedule(task)
+        return Response({"status": "disabled"})
+
+    @action(detail=True, methods=["get"])
+    def schedule_preview(self, request, pk=None):
+        """预览下次 5 次运行时间。"""
+        from .schedule import parse_cron_to_crontab
+        task = self.get_object()
+        if not task.schedule_enabled or not task.schedule_cron:
+            return Response({"next_runs": []})
+        try:
+            cron_kwargs = parse_cron_to_crontab(task.schedule_cron)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+        # Use croniter to compute next runs (lazy import)
+        try:
+            from croniter import croniter
+            from datetime import datetime
+            base = datetime.now()
+            cron_expr = " ".join([
+                cron_kwargs["minute"], cron_kwargs["hour"],
+                cron_kwargs["day_of_month"], cron_kwargs["month_of_year"],
+                cron_kwargs["day_of_week"],
+            ])
+            it = croniter(cron_expr, base)
+            next_runs = [it.get_next(datetime).isoformat() for _ in range(5)]
+            return Response({"next_runs": next_runs, "cron_expr": cron_expr})
+        except ImportError:
+            return Response({
+                "next_runs": [],
+                "note": "install `croniter` to preview next runs: pip install croniter"
+            })
+
     @action(detail=True, methods=["get"])
     def logs(self, request, pk=None):
         task = self.get_object()

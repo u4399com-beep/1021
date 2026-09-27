@@ -19,6 +19,7 @@ class CrawlerTaskSerializer(serializers.ModelSerializer):
             "status", "celery_task_id", "total_items", "processed_items",
             "success_items", "failed_items", "skipped_items",
             "started_at", "finished_at", "last_error",
+            "schedule_next_run", "schedule_last_run", "schedule_run_count",
         )
 
 
