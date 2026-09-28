@@ -14,7 +14,7 @@ from django.template import Context, Template
 from apps.sites.models import Site
 
 
-NGINX_SITES_DIR = os.environ.get("NGINX_SITES_DIR", "/etc/nginx/sites-enabled")
+NGINX_SITES_DIR = os.environ.get("NGINX_SITES_DIR", "/app/media/nginx-sites")
 THEMES_STATIC_ROOT = os.environ.get("THEMES_STATIC_ROOT", "/usr/share/nginx/themes")
 
 

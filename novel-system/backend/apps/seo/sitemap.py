@@ -76,7 +76,25 @@ def render_sitemap(site: Site, books: Iterable[Book]) -> str:
             "priority": "0.80",
         })
 
-    # Books + their chapters
+    # Books + their chapters — P1b fix: batch fetch chapters to avoid N+1
+    books = list(books)
+    book_ids = [b.id for b in books]
+    # Batch fetch all chapters for these books in one query
+    from apps.novel.models import Chapter
+    all_chapters = Chapter.objects.filter(
+        book_id__in=book_ids
+    ).order_by("book_id", "order_index").values(
+        "book_id", "order_index", "updated_at", "fetched_at"
+    )
+    # Group chapters by book_id
+    chapters_by_book = {}
+    for ch in all_chapters:
+        bid = ch["book_id"]
+        if bid not in chapters_by_book:
+            chapters_by_book[bid] = []
+        if len(chapters_by_book[bid]) < 200:  # cap at 200 per book
+            chapters_by_book[bid].append(ch)
+    
     for book in books:
         urls.append({
             "loc": _url_for(site, f"/book/{book.slug}"),
@@ -84,11 +102,10 @@ def render_sitemap(site: Site, books: Iterable[Book]) -> str:
             "changefreq": _freq_for(book),
             "priority": _priority_book(book),
         })
-        # Only the first 200 chapters per book to keep file size manageable
-        for ch in book.chapters.all().order_by("order_index")[:200]:
+        for ch in chapters_by_book.get(book.id, []):
             urls.append({
-                "loc": _url_for(site, f"/book/{book.slug}/chapter/{ch.order_index}"),
-                "lastmod": (ch.updated_at or ch.fetched_at or timezone.now()).strftime("%Y-%m-%d"),
+                "loc": _url_for(site, f"/book/{book.slug}/chapter/{ch['order_index']}"),
+                "lastmod": (ch["updated_at"] or ch["fetched_at"] or timezone.now()).strftime("%Y-%m-%d"),
                 "changefreq": "weekly",
                 "priority": "0.60",
             })

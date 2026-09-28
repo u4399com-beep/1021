@@ -17,19 +17,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.7.7",
     "echarts": "^5.5.1",
-    "vue-echarts": "^7.0.3",
-    "dayjs": "^1.11.13",
-    "@vueuse/core": "^11.1.0",
-    "nprogress": "^0.2.0",
-    "qs": "^6.13.0",
-    "lodash-es": "^4.17.21",
-    "codemirror": "^5.65.16",
-    "vue-codemirror": "^6.1.1",
-    "@codemirror/lang-json": "^6.0.1",
-    "@codemirror/lang-html": "^6.4.9",
-    "@codemirror/lang-javascript": "^6.2.2",
-    "monaco-editor": "^0.52.0",
-    "@guolao/vue-monaco-editor": "^1.5.4"
+    "vue-echarts": "^7.0.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",

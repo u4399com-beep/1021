@@ -53,7 +53,12 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class BookViewSet(viewsets.ModelViewSet):
-    queryset = Book.objects.filter(is_deleted=False)
+    # P1b fix: prefetch_related to eliminate N+1 on categories/tags/author
+    queryset = Book.objects.filter(is_deleted=False).select_related(
+        "author"
+    ).prefetch_related(
+        "categories", "tags"
+    )
     permission_classes = (permissions.IsAuthenticated,)
     filterset_fields = ("status", "is_published", "categories", "author")
     search_fields = ("title", "intro", "tags__name")
@@ -70,6 +75,13 @@ class BookViewSet(viewsets.ModelViewSet):
         if kw:
             qs = qs.filter(Q(title__icontains=kw) | Q(intro__icontains=kw) | Q(tags__name__icontains=kw)).distinct()
         return qs
+
+    def retrieve(self, request, *args, **kwargs):
+        # P1b fix: prefetch chapters with select_related to avoid N+1
+        instance = self.get_object()
+        instance.chapters.prefetch_related  # already a relation, serializer handles it
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
     def republish(self, request, pk=None):

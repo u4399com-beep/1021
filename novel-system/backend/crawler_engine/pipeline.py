@@ -11,6 +11,7 @@ from typing import Any
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
+from django.db.models import Sum as models_Sum
 from django.utils import timezone
 from loguru import logger
 
@@ -103,8 +104,9 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
             book.finished_at = timezone.now()
 
     # 6. Update stats + cover
-    book.chapter_count = book.chapters.count()
-    book.word_count = sum(c.word_count for c in book.chapters.all())
+    book.chapter_count = book.chapters.count()  # COUNT query — efficient
+    from django.db.models import Sum
+    book.word_count = book.chapters.aggregate(total=Sum("word_count"))["total"] or 0
     book.volume_count = book.volumes.count()
     if book.last_chapter_title:
         # take last chapter by order

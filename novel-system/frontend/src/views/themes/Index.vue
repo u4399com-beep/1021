@@ -20,7 +20,7 @@
     </el-card>
 
     <el-dialog v-model="previewVisible" title="主题预览" width="90%" top="5vh">
-      <iframe :src="previewUrl" style="width: 100%; height: 70vh; border: 0;" />
+      <iframe :src="previewUrl" style="width: 100%; height: 70vh; border: 0;" sandbox="allow-same-origin" />
     </el-dialog>
   </div>
 </template>

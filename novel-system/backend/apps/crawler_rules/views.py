@@ -121,7 +121,7 @@ class CrawlerRuleViewSet(viewsets.ModelViewSet):
 
         return Response({
             "ok": True,
-            "elapsed_ms": int(time.time() * 1000) % 1000000,
+            "elapsed_ms": int((time.time() - _test_start_time) * 1000) if _test_start_time else 0,
             "html_size": len(html),
             "result": result,
         })

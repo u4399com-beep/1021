@@ -119,7 +119,7 @@ class Command(BaseCommand):
                 email=os.environ.get("ADMIN_EMAIL", "admin@local"),
                 password=options["admin_password"],
             )
-            self.stdout.write(f"  ✓ superuser 'admin' created (password={options['admin_password']})")
+            self.stdout.write(f"  ✓ superuser 'admin' created (password=***hidden***)")
         else:
             self.stdout.write("  - superuser 'admin' already exists, skipping")
 

@@ -22,7 +22,7 @@ if not SECRET_KEY:
 DEBUG = False
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
 if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["*"]  # fallback only when env not set; override in production
+    ALLOWED_HOSTS = []  # No insecure default — must be set via env
 # CORS — do not allow all origins with credentials
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [

@@ -120,14 +120,19 @@ class Book(models.Model):
             models.Index(fields=["status", "is_published"]),
             models.Index(fields=["-created_at"]),
             models.Index(fields=["author", "status"]),
-            # Performance indexes added in v11
+            # Performance indexes
             models.Index(fields=["slug", "is_published"]),
             models.Index(fields=["-rating"]),
             models.Index(fields=["-updated_at"]),
             models.Index(fields=["source_site", "is_deleted"]),
             models.Index(fields=["finished_at"]),
-            # Composite index for typical "list by status + sort by rating" queries
             models.Index(fields=["status", "is_published", "-rating"], name="book_status_rating_idx"),
+            # P1b: GIN index for trigram fuzzy search on title (pg_trgm)
+            models.Index(
+                fields=["title"],
+                name="book_title_gin_idx",
+                opclasses=["gin_trgm_ops"],
+            ),
         ]
 
     def __str__(self) -> str:

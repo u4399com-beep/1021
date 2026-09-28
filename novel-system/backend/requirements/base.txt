@@ -23,26 +23,17 @@ django-cors-headers==4.4.0
 drf-spectacular==0.27.2
 
 # ---- Crawling core ----
-requests==2.32.3
 httpx==0.27.2
 aiohttp==3.10.5
 beautifulsoup4==4.12.3
 lxml==5.3.0
 lxml_html_clean==0.4.1
 cssselect==1.2.0
-parsel==1.9.1
-selectolax==0.3.21
-fake-useragent==1.5.1
-cloudscraper==1.2.71
-tldextract==5.1.2
 python-dateutil==2.9.0
-chardet==5.2.0
-w3lib==2.0.2
 
 # ---- Browser automation (Playwright + helpers) ----
 playwright==1.46.0
 playwright-stealth==1.0.6
-patchright==1.0.7
 
 # ---- AI / browser-use crawlers (Tier-1 and Tier-2) ----
 # Uncomment the lines for the tiers you want to enable.
@@ -64,7 +55,6 @@ markdown==3.7
 
 # ---- HTML / content cleaning ----
 readability-lxml==0.8.1
-trafilatura==1.12.2
 nh3==0.2.17
 
 # ---- Image / file processing ----
@@ -73,23 +63,13 @@ pillow-avif-plugin==1.4.6
 
 # ---- Smart classifier ----
 jieba==0.42.1
-scikit-learn==1.5.2
-numpy==1.26.4
-pandas==2.2.2
 
 # ---- Search engine suggestion ----
-asyncio_aiohttp==0.0.1
-SerpAPI==0.1.3
 
 # ---- Utilities ----
 python-dotenv==1.0.1
 pyyaml==6.0.2
-orjson==3.10.7
 loguru==0.7.2
-tenacity==9.0.0
-tqdm==4.66.5
-click==8.1.7
-rich==13.8.1
 pydantic==2.9.2
 pydantic-settings==2.5.2
 croniter==2.0.5

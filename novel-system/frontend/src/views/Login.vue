@@ -32,7 +32,7 @@ const userStore = useUserStore()
 const formRef = ref(null)
 const loading = ref(false)
 
-const form = reactive({ username: 'admin', password: 'admin123456' })
+const form = reactive({ username: '', password: '' })
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
