@@ -6,6 +6,7 @@ from .views import (
     rss_book,
     rss_site,
     sitemap_view,
+    theme_check,
 )
 
 app_name = "seo"

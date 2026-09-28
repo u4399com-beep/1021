@@ -100,5 +100,8 @@ croniter==2.0.5
 # Requires system tesseract binary (apt install tesseract-ocr tesseract-ocr-chi-sim)
 pytesseract==0.3.13
 
+# ---- EPUB DRM encryption (v21) ----
+cryptography==43.0.0
+
 # ---- File / epub ----
 ebooklib==0.18

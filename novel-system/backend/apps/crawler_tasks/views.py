@@ -252,6 +252,28 @@ class CrawlerTaskViewSet(
         from .concurrency import get_active_count
         return Response(get_active_count())
 
+    @action(detail=True, methods=["post"])
+    def preempt(self, request, pk=None):
+        """Preempt lower-priority running tasks to make room for this task.
+
+        Returns: {preempted: [task_ids], slot_acquired: bool}
+        """
+        from .concurrency import preempt_for
+        task = self.get_object()
+        result = preempt_for(task)
+        return Response(result)
+
+    @action(detail=True, methods=["get"])
+    def can_preempt(self, request, pk=None):
+        """List which tasks this task could preempt (read-only)."""
+        from .concurrency import find_preemptable_tasks
+        task = self.get_object()
+        return Response({
+            "candidate_id": task.id,
+            "candidate_priority": task.priority,
+            "preemptable_ids": find_preemptable_tasks(task),
+        })
+
     # ------------------------------------------------------------------
     # Stats / history
     # ------------------------------------------------------------------

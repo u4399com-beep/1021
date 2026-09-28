@@ -59,8 +59,18 @@ def scrape_html(
     proxy: str | None = None,
     timeout: int = 30,
     wait_extra_ms: int = 1500,
+    auto_solve_captcha: bool = True,
+    captcha_max_attempts: int = 3,
 ) -> str:
-    """Scrape using Playwright with stealth, optionally via Hyperbrowser."""
+    """Scrape using Playwright with stealth, optionally via Hyperbrowser.
+
+    When Hyperbrowser is enabled, the region is chosen automatically based
+    on the URL's TLD (see `region_router.pick_region_for`).
+
+    When `auto_solve_captcha=True`, common WAF captcha patterns (GoEdge,
+    Cloudflare) are detected and the captcha image is solved automatically
+    using the configured backend (2captcha / OCR).
+    """
     try:
         from playwright.sync_api import sync_playwright
         from playwright_stealth import Stealth  # type: ignore
@@ -81,8 +91,13 @@ def scrape_html(
         # If Hyperbrowser is configured, connect remotely instead of launching locally
         if is_hyperbrowser_enabled():
             try:
-                cdp_url = _connect_hyperbrowser()
+                from ..region_router import pick_region_for
+                from ..anti_detection.pool import get_hyperbrowser_session
+                region = pick_region_for(url)
+                session = get_hyperbrowser_session(region=region)
+                cdp_url = session["cdp_url"]
                 browser = p.chromium.connect_over_cdp(cdp_url)
+                logger.info(f"hyperbrowser connected via region={region} url={url[:80]}")
             except Exception as e:
                 logger.warning(f"hyperbrowser connection failed, falling back to local: {e!r}")
                 browser = p.chromium.launch(
@@ -120,6 +135,26 @@ def scrape_html(
         page.goto(url, wait_until="domcontentloaded", timeout=timeout * 1000)
         page.wait_for_timeout(wait_extra_ms)
 
+        # ─── v23: Auto-solve WAF captchas ──────────────────────
+        if auto_solve_captcha:
+            for attempt in range(captcha_max_attempts):
+                if not _detect_captcha(page):
+                    break
+                logger.info(f"captcha detected (attempt {attempt+1}/{captcha_max_attempts}) url={url[:80]}")
+                solved = _try_solve_captcha(page)
+                if not solved:
+                    logger.warning(f"captcha solve failed on attempt {attempt+1}")
+                    page.wait_for_timeout(2000)
+                    continue
+                # Wait for page to reload after captcha submit
+                page.wait_for_timeout(3000)
+                # Check if captcha is gone
+                if not _detect_captcha(page):
+                    logger.info(f"captcha solved on attempt {attempt+1}")
+                    break
+                else:
+                    logger.warning(f"captcha still present after solve attempt {attempt+1}")
+
         # Auto-scroll to trigger lazy-loaded content
         try:
             page.evaluate("""
@@ -143,3 +178,91 @@ def scrape_html(
         html = page.content()
         browser.close()
         return html
+
+
+# ─── v23: Captcha detection + auto-solve helpers ────────────────────
+def _detect_captcha(page) -> bool:
+    """Detect common WAF captcha patterns on the current page.
+
+    Checks for:
+      - GoEdge WAF (cunshu.la uses this): form#captcha-form
+      - Cloudflare: #challenge-form / cf-challenge
+      - Generic: img#captcha / input[name=captcha]
+    """
+    try:
+        return bool(page.evaluate("""() => {
+            const hasGoEdge = !!document.querySelector('form#captcha-form')
+                || !!document.querySelector('input[name="GOEDGE_WAF_CAPTCHA_CODE"]');
+            const hasCF = !!document.querySelector('#challenge-form')
+                || !!document.querySelector('.cf-turnstile');
+            const hasGeneric = !!document.querySelector('img#captcha, .captcha-image, .ui-captcha-image');
+            return hasGoEdge || hasCF || hasGeneric;
+        }"""))
+    except Exception:
+        return False
+
+
+def _try_solve_captcha(page) -> bool:
+    """Try to detect the captcha image, solve it, and submit the form.
+
+    Returns True if a captcha was solved and submitted (success of the
+    solve itself, not necessarily success of the form submission).
+    """
+    try:
+        from crawler_engine.captcha_solver import solve_captcha
+    except ImportError:
+        return False
+
+    try:
+        # Find the captcha image element
+        img_selector = (
+            'img#captcha-image, img#ui-captcha-image, '
+            'img.captcha-image, .ui-captcha-image img, '
+            'img[src*="captcha"], img[src*="CAPTCHA"]'
+        )
+        img_element = page.query_selector(img_selector)
+        if not img_element:
+            return False
+
+        # Capture the image as bytes
+        img_bytes = img_element.screenshot()
+        if not img_bytes:
+            return False
+
+        # Solve via captcha_solver
+        solution = solve_captcha(img_bytes, prefer="2captcha")
+        if not solution:
+            # Try OCR fallback
+            solution = solve_captcha(img_bytes, prefer="ocr")
+        if not solution:
+            return False
+
+        # Fill the captcha input
+        input_selector = (
+            'input[name="GOEDGE_WAF_CAPTCHA_CODE"], '
+            'input[name="captcha_code"], '
+            'input[name="captcha"], '
+            '#captcha-input, .captcha-input'
+        )
+        input_element = page.query_selector(input_selector)
+        if not input_element:
+            return False
+
+        input_element.fill(solution)
+
+        # Submit the form
+        form_selector = (
+            'form#captcha-form, form.captcha-form, '
+            'form:has(input[name="captcha_code"]), '
+            'form:has(input[name="captcha"])'
+        )
+        form = page.query_selector(form_selector)
+        if form:
+            form.evaluate("el => el.submit()")
+        else:
+            # Press Enter on the input
+            input_element.press("Enter")
+        return True
+    except Exception as e:
+        logger.warning(f"captcha solve exception: {e!r}")
+        return False

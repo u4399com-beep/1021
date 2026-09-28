@@ -114,3 +114,73 @@ def list_active_task_ids() -> list[int]:
     # Note: cache backend must support iter_keys for this to work;
     # for Redis backend we'd need raw client. For simplicity, return [].
     return []
+
+
+# ------------------------------------------------------------------
+# Preemptive priority (v22)
+# ------------------------------------------------------------------
+def can_preempt(candidate_task, target_task) -> bool:
+    """Determine if `candidate_task` can preempt `target_task`.
+
+    A task can preempt another if:
+      - candidate.priority > target.priority (strict)
+      - candidate.exclusive and not target.exclusive (exclusive always wins)
+    """
+    if not candidate_task or not target_task:
+        return False
+    if candidate_task.id == target_task.id:
+        return False
+    if candidate_task.exclusive and not target_task.exclusive:
+        return True
+    return candidate_task.priority > target_task.priority + 10  # need clear margin
+
+
+def find_preemptable_tasks(candidate_task) -> list[int]:
+    """Find tasks that the candidate can preempt (force to pause).
+
+    Returns the task IDs of preemptable targets.
+    """
+    from apps.crawler_tasks.models import CrawlerTask
+    if not candidate_task or not candidate_task.id:
+        return []
+
+    # Find currently running tasks with lower priority
+    running = CrawlerTask.objects.filter(status="running").exclude(id=candidate_task.id)
+    preemptable = []
+    for t in running:
+        if can_preempt(candidate_task, t):
+            preemptable.append(t.id)
+    return preemptable
+
+
+def preempt_for(candidate_task) -> dict:
+    """Preempt lower-priority running tasks to make room for `candidate_task`.
+
+    Returns: {
+      "preempted": [task_id, ...],
+      "slot_acquired": bool,
+    }
+    """
+    from config import celery_app
+    from apps.crawler_tasks.models import CrawlerTask
+
+    preempted = []
+    # Find preemptable running tasks
+    for tid in find_preemptable_tasks(candidate_task):
+        try:
+            t = CrawlerTask.objects.get(pk=tid)
+            # Soft-pause: revoke Celery task and mark CrawlerTask as paused
+            if t.celery_task_id:
+                try:
+                    celery_app.control.revoke(t.celery_task_id, terminate=False, signal="SIGUSR1")
+                except Exception:
+                    pass
+            t.mark_paused()
+            release_slot(t)
+            preempted.append(tid)
+        except CrawlerTask.DoesNotExist:
+            continue
+
+    # Now try to acquire a slot for the candidate
+    slot_acquired = acquire_slot(candidate_task)
+    return {"preempted": preempted, "slot_acquired": slot_acquired}

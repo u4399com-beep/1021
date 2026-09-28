@@ -20,6 +20,7 @@ urlpatterns = [
     path("api/v1/downloads/", include("apps.file_download.urls")),
     path("api/v1/seo/", include("apps.seo.urls")),
     path("api/v1/obfuscator/", include("apps.obfuscator.urls")),
+    path("api/v1/search/", include("apps.search.urls")),
     path("api/v1/", include("apps.api.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),

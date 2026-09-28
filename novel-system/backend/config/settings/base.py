@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "apps.file_download",
     "apps.seo",
     "apps.obfuscator",
+    "apps.search",
 ]
 
 MIDDLEWARE = [
@@ -99,8 +100,24 @@ DATABASES = {
         "PORT": os.environ.get("DB_PORT", "5432"),
         "CONN_MAX_AGE": 60,
         "OPTIONS": {"options": "-c timezone=Asia/Shanghai"},
-    }
+    },
 }
+
+# Optional read replica (v25) — set DATABASE_REPLICA_ENABLED=true to enable
+DATABASE_REPLICA_ENABLED = os.environ.get("DATABASE_REPLICA_ENABLED", "false").lower() in ("true", "1", "yes")
+if DATABASE_REPLICA_ENABLED:
+    DATABASES["replica"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_REPLICA_NAME", DATABASES["default"]["NAME"]),
+        "USER": os.environ.get("DB_REPLICA_USER", DATABASES["default"]["USER"]),
+        "PASSWORD": os.environ.get("DB_REPLICA_PASSWORD", DATABASES["default"]["PASSWORD"]),
+        "HOST": os.environ.get("DB_REPLICA_HOST", "postgres-replica"),
+        "PORT": os.environ.get("DB_REPLICA_PORT", "5432"),
+        "CONN_MAX_AGE": 60,
+        "OPTIONS": {"options": "-c timezone=Asia/Shanghai -c default_transaction_read_only=on"},
+    }
+
+DATABASE_ROUTERS = ["apps.read_replica.ReadReplicaRouter"] if DATABASE_REPLICA_ENABLED else []
 
 # ------------------------------------------------------------------
 # Auth / password

@@ -167,6 +167,108 @@ class ProxyPoolViewSet(viewsets.ModelViewSet):
                 })
         return Response({"swept_count": len(disabled), "disabled": disabled})
 
+    # ------------------------------------------------------------------
+    # Windowed 24-hour stats (v20)
+    # ------------------------------------------------------------------
+    @action(detail=True, methods=["get"])
+    def hourly_stats(self, request, pk=None):
+        """Return per-hour success/failure counts for the last 24h."""
+        from .proxy_windowed_stats import get_hourly_stats
+        p = self.get_object()
+        hours = int(request.query_params.get("hours", 24))
+        stats = get_hourly_stats(p.id, hours=hours)
+        return Response({
+            "proxy_id": p.id, "proxy_name": p.name,
+            "hours": list(stats.values()),
+        })
+
+    @action(detail=True, methods=["get"])
+    def best_hours(self, request, pk=None):
+        """Return the N hours with highest success rate."""
+        from .proxy_windowed_stats import get_best_hours
+        p = self.get_object()
+        hours = int(request.query_params.get("hours", 24))
+        top_n = int(request.query_params.get("n", 5))
+        return Response({
+            "proxy_id": p.id,
+            "best_hours": get_best_hours(p.id, hours=hours, top_n=top_n),
+        })
+
+    @action(detail=True, methods=["get"])
+    def windowed_success_rate(self, request, pk=None):
+        """Return success rate across the last N hours."""
+        from .proxy_windowed_stats import get_windowed_success_rate
+        p = self.get_object()
+        hours = int(request.query_params.get("hours", 24))
+        return Response({
+            "proxy_id": p.id,
+            "window_hours": hours,
+            "success_rate": get_windowed_success_rate(p.id, window_hours=hours),
+        })
+
+    @action(detail=True, methods=["post"])
+    def record_hourly(self, request, pk=None):
+        """Record an hourly success/failure (called by fetcher on each request).
+
+        Body: {success: bool}
+        """
+        from .proxy_windowed_stats import record_hourly
+        p = self.get_object()
+        success = bool(request.data.get("success", True))
+        record_hourly(p.id, success=success)
+        return Response({"status": "recorded", "proxy_id": p.id, "success": success})
+
+
+# ------------------------------------------------------------------
+# Region router diagnostics (v19)
+# ------------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def region_status(request):
+    """Return region router state + manual overrides."""
+    from crawler_engine.region_router import diagnostics, pick_region_for
+    diag = diagnostics()
+    # Add sample resolutions for popular sites
+    diag["samples"] = {
+        "cunshu.la": pick_region_for("cunshu.la"),
+        "example.com": pick_region_for("example.com"),
+        "example.co.jp": pick_region_for("example.co.jp"),
+        "example.de": pick_region_for("example.de"),
+    }
+    return Response(diag)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, CanEditSystem])
+def region_set_override(request):
+    """Set a manual host → region override.
+
+    Body: {host: "cunshu.la", region: "cn"}
+    """
+    from crawler_engine.region_router import set_host_override, pick_region_for
+    host = request.data.get("host", "").strip()
+    region = request.data.get("region", "").strip()
+    if not host or not region:
+        return Response({"error": "host and region required"}, status=400)
+    set_host_override(host, region)
+    return Response({"status": "ok", "host": host, "region": region,
+                     "preview": pick_region_for(host)})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, CanEditSystem])
+def region_clear_override(request):
+    """Clear a manual override.
+
+    Body: {host: "cunshu.la"}
+    """
+    from crawler_engine.region_router import clear_host_override
+    host = request.data.get("host", "").strip()
+    if not host:
+        return Response({"error": "host required"}, status=400)
+    clear_host_override(host)
+    return Response({"status": "cleared", "host": host})
+
 
 # ------------------------------------------------------------------
 # Captcha solver diagnostics
