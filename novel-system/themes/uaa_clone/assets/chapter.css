@@ -1,0 +1,108 @@
+/* UAA Clone Theme — Chapter Reading */
+
+.uaa-reading-body { background: var(--uaa-bg); }
+.uaa-reading-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.uaa-chapter {
+  background: #fff;
+  border: 1px solid var(--uaa-border);
+  border-radius: 6px;
+  padding: 32px 40px 24px;
+}
+
+.uaa-ch-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--uaa-text);
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--uaa-primary);
+  letter-spacing: 1px;
+}
+
+.uaa-ch-content {
+  font-size: 16px;
+  line-height: 2.1;
+  color: var(--uaa-text);
+}
+
+.uaa-ch-content p {
+  margin-bottom: 16px;
+  text-indent: 2em;
+}
+
+.uaa-ch-content h2,
+.uaa-ch-content h3 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  color: var(--uaa-primary-dark);
+}
+
+.uaa-ch-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 16px 0;
+  border-radius: 4px;
+}
+
+.uaa-ch-nav {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--uaa-border);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.uaa-nav-link {
+  flex: 1;
+  display: block;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.uaa-nav-prev, .uaa-nav-next {
+  background: var(--uaa-primary);
+  color: #fff;
+}
+.uaa-nav-prev:hover, .uaa-nav-next:hover {
+  background: var(--uaa-primary-dark);
+  color: #fff;
+  text-decoration: none;
+}
+
+.uaa-nav-toc {
+  background: var(--uaa-primary-light);
+  color: var(--uaa-primary);
+  border: 1px solid var(--uaa-primary);
+}
+.uaa-nav-toc:hover {
+  background: var(--uaa-primary);
+  color: #fff;
+  text-decoration: none;
+}
+
+.uaa-ch-recommend {
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .uaa-chapter { padding: 20px 16px 16px; }
+  .uaa-ch-title { font-size: 20px; margin-bottom: 16px; padding-bottom: 12px; }
+  .uaa-ch-content { font-size: 15px; line-height: 1.9; }
+  .uaa-ch-content p { text-indent: 2em; margin-bottom: 12px; }
+  .uaa-ch-nav { flex-direction: column; gap: 8px; }
+  .uaa-nav-link { padding: 10px 16px; }
+}

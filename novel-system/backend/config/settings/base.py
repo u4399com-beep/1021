@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     "apps.seo",
     "apps.obfuscator",
     "apps.search",
+    "apps.webhooks",
+    "apps.exporters",
+    "apps.audit_log",
 ]
 
 MIDDLEWARE = [
@@ -58,12 +61,15 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.obfuscator.middleware.ObfuscatorMiddleware",
+    "apps.account.rate_limit.RateLimitMiddleware",
+    "apps.audit_log.middleware.AuditLogMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -119,6 +125,24 @@ if DATABASE_REPLICA_ENABLED:
 
 DATABASE_ROUTERS = ["apps.read_replica.ReadReplicaRouter"] if DATABASE_REPLICA_ENABLED else []
 
+
+# ------------------------------------------------------------------
+# Rate limiting (v27)
+# ------------------------------------------------------------------
+RATE_LIMIT_RULES = {
+    # Search endpoints
+    "/api/v1/search/":             {"rate": 60, "per": 60, "desc": "全文搜索 60/min"},
+    "/api/v1/search/suggest/":     {"rate": 120, "per": 60, "desc": "自动补全 120/min"},
+    # Crawler engine (expensive)
+    "/api/v1/crawler/engine/test/": {"rate": 10, "per": 60, "desc": "引擎测试 10/min"},
+    "/api/v1/crawler/engine/fetch/": {"rate": 5, "per": 60, "desc": "引擎抓取 5/min"},
+    "/api/v1/crawler/captcha/solve/": {"rate": 10, "per": 60, "desc": "验证码 10/min"},
+    # Auth — prevent brute force
+    "/api/v1/auth/login/":         {"rate": 10, "per": 60, "desc": "登录 10/min"},
+    # DRM (CPU expensive)
+    "/api/v1/downloads/generate/generate-drm/": {"rate": 5, "per": 60, "desc": "DRM 5/min"},
+}
+
 # ------------------------------------------------------------------
 # Auth / password
 # ------------------------------------------------------------------
@@ -138,6 +162,15 @@ LANGUAGE_CODE = "zh-hans"
 TIME_ZONE = "Asia/Shanghai"
 USE_I18N = True
 USE_TZ = True
+
+# v32: i18n
+LANGUAGES = [
+    ("zh-hans", "简体中文"),
+    ("en", "English"),
+]
+LOCALE_PATHS = [BASE_DIR / "locale"]
+LANGUAGE_COOKIE_NAME = "novel_lang"
+LANGUAGE_COOKIE_AGE = 365 * 24 * 3600
 
 # ------------------------------------------------------------------
 # Static / media

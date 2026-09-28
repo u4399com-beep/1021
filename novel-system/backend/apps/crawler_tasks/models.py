@@ -113,6 +113,20 @@ class CrawlerTask(models.Model):
     exclusive = models.BooleanField("独占执行", default=False,
         help_text="为 True 时，本任务运行期间不允许其他任务运行（适合大型全量采集）")
 
+    # ─── v29: 失败自动重试（差异化策略） ──────────────────────
+    retry_max = models.IntegerField("最大重试次数", default=3,
+        help_text="任务整体失败时的重试上限（0=不重试）")
+    retry_delay = models.FloatField("重试间隔(秒)", default=60,
+        help_text="每次重试前等待秒数")
+    retry_backoff = models.FloatField("重试退避倍数", default=2.0,
+        help_text="每次重试间隔在上一次基础上乘以这个倍数")
+    retry_strategy = models.CharField("重试策略", max_length=32, default="error_aware",
+        choices=[("always", "总是重试"), ("error_aware", "按错误类型判定"), ("never", "从不重试")],
+        help_text="error_aware: 对验证码/限流类错误重试，对内容缺失类不重试")
+    retry_count = models.IntegerField("已重试次数", default=0)
+    retry_history = models.JSONField("重试历史", default=list, blank=True,
+        help_text='[{"attempt":1, "error":"...", "ts":"..."}]')
+
     # 进度统计
     total_items = models.IntegerField("总数", default=0)
     processed_items = models.IntegerField("已处理", default=0)

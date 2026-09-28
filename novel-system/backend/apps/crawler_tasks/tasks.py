@@ -81,6 +81,8 @@ def _execute_task(self, task):
             record_run(task)
         except Exception:
             pass
+        # v29: try retry if applicable
+        _maybe_schedule_retry(task, repr(e))
         return
 
     # Dispath with a Celery group — each URL becomes a child task
@@ -106,9 +108,11 @@ def _execute_task(self, task):
     except SoftTimeLimitExceeded:
         _log(task, "soft time limit exceeded")
         task.mark_error("soft time limit")
+        _maybe_schedule_retry(task, "soft time limit exceeded")
     except Exception as e:
         _log(task, f"unexpected error: {e!r}")
         task.mark_error(repr(e))
+        _maybe_schedule_retry(task, repr(e))
         return
 
     task.refresh_from_db()
@@ -122,6 +126,39 @@ def _execute_task(self, task):
         record_run(task)
     except Exception as e:
         logger.warning(f"failed to record_run for task {task.id}: {e!r}")
+
+    # v29: on success, reset retry counters + notify webhook
+    try:
+        from .retry import reset_retries
+        reset_retries(task)
+    except Exception:
+        pass
+    try:
+        from apps.webhooks.engine import notify_task_done
+        notify_task_done(task)
+    except Exception:
+        pass
+
+
+def _maybe_schedule_retry(task, error: str):
+    """v29: schedule a retry based on the error and the task's retry strategy."""
+    try:
+        from .retry import should_retry, record_retry
+        should, delay, reason = should_retry(task, error)
+        if not should:
+            _log(task, f"retry skipped: {reason}", level="warning")
+            try:
+                from apps.webhooks.engine import notify_task_error
+                notify_task_error(task, error)
+            except Exception:
+                pass
+            return
+        record_retry(task, error)
+        task.save()
+        _log(task, f"retry scheduled: attempt {task.retry_count}/{task.retry_max} in {delay}s — {reason}")
+        run_crawler_task.apply_async(args=[task.id], countdown=delay)
+    except Exception as e:
+        logger.warning(f"failed to schedule retry for task {task.id}: {e!r}")
 
 
 @celery_app.task(bind=True, name="apps.crawler_tasks.tasks.crawl_one_url")

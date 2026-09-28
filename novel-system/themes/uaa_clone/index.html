@@ -1,0 +1,159 @@
+<!-- ============================================================
+     UAA Clone Theme — 笔趣阁蓝（浅蓝配色）
+     克隆 https://www.uaa.com/novel/list 风格，但用浅蓝笔趣阁背景色
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site.site_title|default:"笔趣阁 - 免费小说在线阅读" }}</title>
+  <meta name="description" content="{{ site.site_description|default:'笔趣阁，免费小说在线阅读，玄幻奇幻武侠仙侠都市全类型小说一网打尽。' }}">
+  <meta name="keywords" content="{{ site.site_keywords|default:'笔趣阁,免费小说,小说阅读,玄幻,奇幻,武侠,仙侠,都市' }}">
+  <link rel="canonical" href="{% if site.canonical_domain %}https://{{ site.canonical_domain }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+  <meta name="geo.region" content="{{ site.geo_region|default:'CN' }}">
+  <meta name="language" content="{{ site.geo_lang|default:'zh-CN' }}">
+  <meta property="og:title" content="{{ site.site_title }}">
+  <meta property="og:description" content="{{ site.site_description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <link rel="icon" href="{{ site.favicon|default:'/favicon.ico' }}">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <!-- ─── 顶部导航 ─── -->
+  <header class="uaa-header">
+    <div class="uaa-header-bar">
+      <div class="uaa-container">
+        <a href="/" class="uaa-logo">
+          <span class="uaa-logo-text">{{ site.name|default:"笔趣阁" }}</span>
+        </a>
+        <nav class="uaa-nav">
+          <a href="/" class="uaa-nav-item">首页</a>
+          <a href="/category/xuanhuan" class="uaa-nav-item">玄幻</a>
+          <a href="/category/xiuzhen" class="uaa-nav-item">修真</a>
+          <a href="/category/dushi" class="uaa-nav-item">都市</a>
+          <a href="/category/chuanuei" class="uaa-nav-item">穿越</a>
+          <a href="/category/wangyou" class="uaa-nav-item">网游</a>
+          <a href="/category/kehuan" class="uaa-nav-item">科幻</a>
+          <a href="/category/lishi" class="uaa-nav-item">历史</a>
+          <a href="/category/yanqing" class="uaa-nav-item">言情</a>
+          <a href="/category/tongren" class="uaa-nav-item">同人</a>
+        </nav>
+        <form class="uaa-search" action="/search" method="get">
+          <input type="text" name="q" placeholder="输入书名/作者搜索" class="uaa-search-input">
+          <button type="submit" class="uaa-search-btn">搜索</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="uaa-main uaa-container">
+    <!-- ─── 推荐位 ─── -->
+    {% if featured_books %}
+    <section class="uaa-section uaa-featured">
+      <div class="uaa-section-header">
+        <h2 class="uaa-section-title">本站推荐</h2>
+        <span class="uaa-section-more"><a href="/rank/all">更多 →</a></span>
+      </div>
+      <div class="uaa-featured-grid">
+        {% for book in featured_books %}
+        <div class="uaa-book-card">
+          <a href="/book/{{ book.slug }}" class="uaa-book-link">
+            <div class="uaa-book-cover-wrap">
+              <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}" loading="lazy" class="uaa-book-cover">
+              <span class="uaa-book-status uaa-status-{{ book.status }}">{{ book.get_status_display }}</span>
+            </div>
+            <div class="uaa-book-info">
+              <h3 class="uaa-book-title">{{ book.title }}</h3>
+              <p class="uaa-book-author">作者：{{ book.author.name|default:"佚名" }}</p>
+              <p class="uaa-book-intro">{{ book.intro|truncatechars:80 }}</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- ─── 最新入库列表（笔趣阁经典两列布局） ─── -->
+    <section class="uaa-section">
+      <div class="uaa-section-header">
+        <h2 class="uaa-section-title">最新入库</h2>
+      </div>
+      <div class="uaa-list-layout">
+        <ul class="uaa-book-list">
+          {% for book in latest_books %}
+          <li class="uaa-list-item">
+            <span class="uaa-list-cat">
+              <a href="/category/{% if book.categories.first %}{{ book.categories.first.slug }}{% endif %}">
+                [{% if book.categories.first %}{{ book.categories.first.name }}{% else %}其他{% endif %}]
+              </a>
+            </span>
+            <span class="uaa-list-title">
+              <a href="/book/{{ book.slug }}">{{ book.title }}</a>
+            </span>
+            <span class="uaa-list-author">{{ book.author.name|default:"佚名" }}</span>
+            <span class="uaa-list-status uaa-status-{{ book.status }}">{{ book.get_status_display }}</span>
+            <span class="uaa-list-chapters">{{ book.chapter_count }}章</span>
+            <span class="uaa-list-time">{{ book.updated_at|date:"Y-m-d" }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── 分类入口（笔趣阁经典九宫格） ─── -->
+    <section class="uaa-section">
+      <div class="uaa-section-header">
+        <h2 class="uaa-section-title">小说分类</h2>
+      </div>
+      <div class="uaa-cats-grid">
+        <a href="/category/xuanhuan" class="uaa-cat-card">
+          <h3>玄幻奇幻</h3>
+          <p>修真玄幻、东方玄幻、异世大陆</p>
+        </a>
+        <a href="/category/wuxia" class="uaa-cat-card">
+          <h3>武侠仙侠</h3>
+          <p>传统武侠、新派武侠、仙侠修真</p>
+        </a>
+        <a href="/category/dushi" class="uaa-cat-card">
+          <h3>都市言情</h3>
+          <p>都市生活、官场职场、商战风云</p>
+        </a>
+        <a href="/category/chuanuei" class="uaa-cat-card">
+          <h3>历史穿越</h3>
+          <p>架空历史、两宋元明、秦汉三国</p>
+        </a>
+        <a href="/category/wangyou" class="uaa-cat-card">
+          <h3>网游竞技</h3>
+          <p>网游小说、电竞、虚拟现实</p>
+        </a>
+        <a href="/category/kehuan" class="uaa-cat-card">
+          <h3>科幻灵异</h3>
+          <p>未来世界、末世危机、灵异惊悚</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── 页脚 ─── -->
+  <footer class="uaa-footer">
+    <div class="uaa-container">
+      <div class="uaa-footer-links">
+        <a href="/">关于我们</a>
+        <a href="/">联系方式</a>
+        <a href="/sitemap.xml">网站地图</a>
+        <a href="/rss.xml">RSS 订阅</a>
+      </div>
+      <p class="uaa-footer-copy">
+        &copy; {{ now|date:"Y" }} {{ site.name|default:"笔趣阁" }} · All rights reserved.
+        本站所有小说均为转载作品，转载目的仅为阅读交流。
+      </p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>
