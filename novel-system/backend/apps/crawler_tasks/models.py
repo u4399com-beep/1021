@@ -127,6 +127,18 @@ class CrawlerTask(models.Model):
     retry_history = models.JSONField("重试历史", default=list, blank=True,
         help_text='[{"attempt":1, "error":"...", "ts":"..."}]')
 
+    # ─── v34: 任务依赖（A 完成自动触发 B） ──────────────────
+    depends_on = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="downstream_tasks",
+        help_text="本任务会在前置任务成功完成后自动触发",
+    )
+    trigger_on_dependency = models.BooleanField("启用依赖触发", default=False,
+        help_text="为 True 时，depends_on 任务完成后会自动触发本任务")
+    trigger_condition = models.CharField("触发条件", max_length=16, default="success",
+        choices=[("success", "成功"), ("failure", "失败"), ("either", "成功或失败")],
+        help_text="前置任务满足此条件才触发")
+
     # 进度统计
     total_items = models.IntegerField("总数", default=0)
     processed_items = models.IntegerField("已处理", default=0)

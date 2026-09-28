@@ -275,6 +275,85 @@ class CrawlerTaskViewSet(
         })
 
     # ------------------------------------------------------------------
+    # v34: Task dependency
+    # ------------------------------------------------------------------
+    @action(detail=True, methods=["post"], url_path="set-dependency")
+    def set_dependency(self, request, pk=None):
+        """Set this task to be triggered when the parent task finishes.
+
+        Body: {parent_id: 5, condition: "success"|"failure"|"either"}
+        """
+        task = self.get_object()
+        parent_id = request.data.get("parent_id")
+        condition = request.data.get("condition", "success")
+        if not parent_id:
+            return Response({"error": "parent_id required"}, status=400)
+        try:
+            parent = CrawlerTask.objects.get(pk=parent_id)
+        except CrawlerTask.DoesNotExist:
+            return Response({"error": "parent task not found"}, status=404)
+        if parent.id == task.id:
+            return Response({"error": "cannot depend on self"}, status=400)
+        if condition not in ("success", "failure", "either"):
+            return Response({"error": "invalid condition"}, status=400)
+        task.depends_on = parent
+        task.trigger_on_dependency = True
+        task.trigger_condition = condition
+        task.save(update_fields=["depends_on", "trigger_on_dependency", "trigger_condition"])
+        return Response({
+            "task_id": task.id, "parent_id": parent.id,
+            "condition": condition, "status": "ok",
+        })
+
+    @action(detail=True, methods=["post"], url_path="clear-dependency")
+    def clear_dependency(self, request, pk=None):
+        """Remove the dependency from this task."""
+        task = self.get_object()
+        task.depends_on = None
+        task.trigger_on_dependency = False
+        task.save(update_fields=["depends_on", "trigger_on_dependency"])
+        return Response({"task_id": task.id, "status": "cleared"})
+
+    @action(detail=True, methods=["get"], url_path="downstream")
+    def downstream(self, request, pk=None):
+        """List tasks that depend on this task."""
+        task = self.get_object()
+        children = task.downstream_tasks.all()
+        return Response({
+            "parent_id": task.id, "downstream_count": children.count(),
+            "downstream": CrawlerTaskSerializer(children, many=True).data,
+        })
+
+    @action(detail=False, methods=["get"], url_path="dependency-graph")
+    def dependency_graph(self, request):
+        """Return the full task dependency graph as a dict.
+
+        Output:
+            {
+              "nodes": [{id, name, status, depends_on, condition}, ...],
+              "edges": [{from: parent_id, to: child_id, condition}, ...],
+            }
+        """
+        nodes = []
+        edges = []
+        for t in self.get_queryset().filter(trigger_on_dependency=True):
+            nodes.append({
+                "id": t.id, "name": t.name, "status": t.status,
+                "depends_on": t.depends_on_id, "condition": t.trigger_condition,
+            })
+            if t.depends_on_id:
+                edges.append({"from": t.depends_on_id, "to": t.id, "condition": t.trigger_condition})
+        # Also include parents that have downstream tasks
+        parent_ids = {e["from"] for e in edges}
+        for parent in self.get_queryset().filter(id__in=parent_ids):
+            if not any(n["id"] == parent.id for n in nodes):
+                nodes.append({
+                    "id": parent.id, "name": parent.name, "status": parent.status,
+                    "depends_on": None, "condition": None,
+                })
+        return Response({"nodes": nodes, "edges": edges, "total": len(nodes)})
+
+    # ------------------------------------------------------------------
     # Stats / history
     # ------------------------------------------------------------------
     @action(detail=False, methods=["get"])

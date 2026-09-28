@@ -35,6 +35,11 @@ THEME_TEMPLATES = {
         "files": ["index.html", "book_detail.html", "chapter.html"],
         "static_dir": "themes/minimal_rank",
     },
+    "uaa_clone": {
+        "name": "笔趣阁蓝",
+        "files": ["index.html", "book_detail.html", "chapter.html"],
+        "static_dir": "themes/uaa_clone",
+    },
 }
 
 

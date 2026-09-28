@@ -24,6 +24,7 @@ urlpatterns = [
     path("api/v1/webhooks/", include("apps.webhooks.urls")),
     path("api/v1/export/", include("apps.exporters.urls")),
     path("api/v1/audit/", include("apps.audit_log.urls")),
+    path("api/v1/dashboard/", include("apps.dashboard.urls")),
     path("api/v1/", include("apps.api.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),

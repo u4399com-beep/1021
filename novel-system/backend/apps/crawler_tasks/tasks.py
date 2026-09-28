@@ -139,6 +139,34 @@ def _execute_task(self, task):
     except Exception:
         pass
 
+    # v34: trigger downstream tasks based on dependency config
+    try:
+        _trigger_downstream_tasks(task, success=True)
+    except Exception as e:
+        logger.warning(f"failed to trigger downstream for task {task.id}: {e!r}")
+
+
+def _trigger_downstream_tasks(parent_task, success: bool):
+    """v34: Trigger downstream tasks whose `depends_on` is this task and condition matches."""
+    from .models import CrawlerTask
+    downstream_qs = CrawlerTask.objects.filter(
+        depends_on=parent_task, trigger_on_dependency=True, enabled=True
+    )
+    for child in downstream_qs:
+        # Check trigger condition
+        cond = child.trigger_condition or "success"
+        if cond == "success" and not success:
+            _log(child, f"skip trigger from {parent_task.name}: parent failed but condition=success", level="info")
+            continue
+        if cond == "failure" and success:
+            _log(child, f"skip trigger from {parent_task.name}: parent succeeded but condition=failure", level="info")
+            continue
+        _log(child, f"triggered by parent {parent_task.name} (success={success})")
+        async_result = run_crawler_task.delay(child.id)
+        child.celery_task_id = async_result.id
+        child.status = "queued"
+        child.save(update_fields=["celery_task_id", "status"])
+
 
 def _maybe_schedule_retry(task, error: str):
     """v29: schedule a retry based on the error and the task's retry strategy."""
@@ -152,6 +180,11 @@ def _maybe_schedule_retry(task, error: str):
                 notify_task_error(task, error)
             except Exception:
                 pass
+            # v34: trigger downstream tasks even on terminal failure
+            try:
+                _trigger_downstream_tasks(task, success=False)
+            except Exception as e:
+                logger.warning(f"failed to trigger downstream (failure path) for {task.id}: {e!r}")
             return
         record_retry(task, error)
         task.save()
