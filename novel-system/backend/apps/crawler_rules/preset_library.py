@@ -44,6 +44,11 @@ PRESETS = {
         },
         "anti_detection": {"tier_required": "playwright", "waf_captcha": True},
     },
+    "generic_php_v2": {
+        "name": "通用PHP小说站V2",
+        "host": "",
+        "list_config": {"item_selector": {"type": "css", "expr": "ul.book-list li, .novel-list-item"}},
+    },
     "generic_php": {
         "name": "通用PHP小说站",
         "host": "",

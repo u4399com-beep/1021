@@ -33,7 +33,7 @@ LIST_CONFIG = {
     },
     "item_selector": {
         "type": "css",
-        "expr": "ul.library-list li, div.book-item, div.novel-list > div.item, table.list tr[class]",
+        "expr": "ul.library-list li, div.book-item, .novel-list-item, .book-list-item, ul.book-list li, table.list tr[class]",
     },
     "book_url":     {
         "type": "xpath",
@@ -51,7 +51,7 @@ LIST_CONFIG = {
 
 
 BOOK_CONFIG = {
-    "title":   {"type": "css", "expr": "h1.book-title::text, h1.title::text, .book-info h1::text, #info h1::text"},
+    "title":   {"type": "css", "expr": "h1.book-title::text, h1.title::text, .book-info h1::text, #info h1::text, h1::text, .bookname h1::text"},
     "author":  {"type": "css", "expr": ".author a::text, span.author::text, .book-info .author::text, #info p a::text"},
     "cover":   {"type": "xpath", "expr": "//div[contains(@class,'cover')]//img/@src | //div[@id='fmimg']//img/@src"},
     "intro":   {"type": "css", "expr": ".intro::text, .summary::text, #intro p::text, .book-intro p::text", "multi": False},
@@ -80,7 +80,7 @@ TOC_CONFIG = {
 
 CHAPTER_CONFIG = {
     "title":   {"type": "css", "expr": "h1.chapter-title::text, h1::text, .chapter-head h1::text, #title::text"},
-    "content": {"type": "css", "expr": "div.chapter-content, div.content, div#content, div#BookText, div#nr1"},
+    "content": {"type": "css", "expr": "div.chapter-content, div.content, div#content, div#BookText, div#nr1, .read-content, .chapter-body, #nr1, .novel-content"},
     "next_page": {"type": "css", "expr": "a.next::attr(href), a[href*=javascript]:contains('下一页')::attr(href)"},
     "remove_selectors": [
         "script",

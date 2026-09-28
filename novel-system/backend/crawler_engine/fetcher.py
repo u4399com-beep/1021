@@ -154,7 +154,14 @@ def fetch_page(url: str, *, use_browser: bool = False, proxy: str | None = None)
     are skipped silently after the first attempt.
     """
     ctx = FetchContext(url=url, use_browser=use_browser, proxy=proxy)
-    _check_ssrf(url)  # v124: SSRF guard
+    _check_ssrf(url)
+    # v186: log strategy selection
+    try:
+        from .strategy_selector import select_strategy
+        _strategy = select_strategy(url)
+        logger.info(f"strategy: tier={_strategy["recommended_tier"]} url={url[:60]}")
+    except Exception:
+        pass
     last_err: str | None = None
 
     for name, fn in TIERS:

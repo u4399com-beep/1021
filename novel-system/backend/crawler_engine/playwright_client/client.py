@@ -128,7 +128,19 @@ def scrape_html(
 
         page = context.new_page()
         try:
-            Stealth().apply(page)  # type: ignore
+            Stealth().apply(page)
+            # v173: deep stealth CDP injection
+            try:
+                from ..anti_detection.stealth_config import apply_stealth_cdp
+                apply_stealth_cdp(page)
+            except Exception:
+                pass
+            # v173: behavior simulation
+            try:
+                from ..anti_detection.behavior_sim import full_human_simulation
+                full_human_simulation(page)
+            except Exception:
+                pass  # type: ignore
         except Exception:
             pass
 

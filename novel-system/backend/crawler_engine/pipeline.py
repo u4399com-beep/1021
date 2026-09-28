@@ -130,6 +130,11 @@ def _upsert_book(book_data: dict, *, source_url: str) -> Book | None:
     if not _t or len(_t) > 500:
         return None
 
+    # v181: validate book data quality
+    from .quality_validator import validate_book_data
+    qv = validate_book_data(book_data)
+    if not qv["valid"]:
+        logger.warning(f"book data quality issues: {qv["issues"]}")
     title = str(book_data["title"]).strip()
     author_name = (book_data.get("author") or "").strip() or "佚名"
     author, _ = Author.objects.get_or_create(name=author_name)
@@ -357,6 +362,11 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
                 defaults={"order_index": vol_idx},
             )
 
+        # v181: validate chapter quality
+        from .quality_validator import validate_chapter_data
+        cv = validate_chapter_data({"title": final_title, "content": content})
+        if not cv["valid"]:
+            logger.warning(f"chapter quality issues: {cv["issues"]}")
         chapter, _ = Chapter.objects.update_or_create(
             book=book, source_url=url,
             defaults={

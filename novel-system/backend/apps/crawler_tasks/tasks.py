@@ -115,6 +115,12 @@ def _execute_task(self, task):
     task.refresh_from_db()
     if task.status == "running":
         task.mark_done()
+    # v184: post-run quality check
+    try:
+        from crawler_engine.quality_validator import validate_book_data
+        _log(task, f"quality check: {task.success_items} items collected")
+    except Exception:
+        pass
     _log(task, f"finished: success={task.success_items} failed={task.failed_items} skipped={task.skipped_items}")
 
     # Record scheduled run completion
