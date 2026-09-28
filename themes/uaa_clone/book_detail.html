@@ -1,0 +1,162 @@
+<!-- ============================================================
+     UAA Clone Theme — Book Detail Page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ book.title }} - {{ book.author.name|default:"佚名" }} - {{ site.name|default:"笔趣阁" }}</title>
+  <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <meta name="keywords" content="{{ book.title }},{{ book.author.name|default:'' }},{{ site.name|default:'笔趣阁' }},{% for t in book.tags.all %}{{ t.name }},{% endfor %}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <meta property="og:title" content="{{ book.title }}">
+  <meta property="og:description" content="{{ book.intro|truncatechars:200 }}">
+  <meta property="og:type" content="book">
+  <meta property="og:image" content="{{ book.cover.url|default:book.cover_url }}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "{{ book.title }}",
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:'' }}" },
+    "description": "{{ book.intro|escapejs }}",
+    "inLanguage": "zh-CN",
+    "image": "{{ book.cover.url|default:book.cover_url }}"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <header class="uaa-header">
+    <div class="uaa-header-bar">
+      <div class="uaa-container">
+        <a href="/" class="uaa-logo"><span class="uaa-logo-text">{{ site.name|default:"笔趣阁" }}</span></a>
+        <nav class="uaa-nav">
+          <a href="/" class="uaa-nav-item">首页</a>
+          <a href="/book/{{ book.slug }}/toc" class="uaa-nav-item">目录</a>
+          <a href="/search" class="uaa-nav-item">搜索</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="uaa-main uaa-container">
+    <!-- 面包屑 -->
+    <div class="uaa-breadcrumb">
+      <a href="/">首页</a> &gt;
+      <a href="/category/{% if book.categories.first %}{{ book.categories.first.slug }}{% endif %}">{% if book.categories.first %}{{ book.categories.first.name }}{% else %}其他{% endif %}</a> &gt;
+      <span>{{ book.title }}</span>
+    </div>
+
+    <section class="uaa-section uaa-book-detail">
+      <div class="uaa-detail-left">
+        <div class="uaa-detail-cover">
+          <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+        </div>
+        <div class="uaa-detail-actions">
+          <a href="/book/{{ book.slug }}/chapter/1" class="uaa-btn uaa-btn-primary">开始阅读</a>
+          <a href="/book/{{ book.slug }}/toc" class="uaa-btn uaa-btn-secondary">章节目录</a>
+          <a href="/download/{{ book.slug }}" class="uaa-btn uaa-btn-tertiary">下载TXT</a>
+        </div>
+      </div>
+
+      <div class="uaa-detail-right">
+        <h1 class="uaa-detail-title">{{ book.title }}</h1>
+        <p class="uaa-detail-meta">
+          <span class="uaa-meta-row">
+            作者：<a href="/search?q={{ book.author.name|default:'' }}">{{ book.author.name|default:"佚名" }}</a>
+          </span>
+          <span class="uaa-detail-status uaa-status-{{ book.status }}">{{ book.get_status_display }}</span>
+        </p>
+
+        <div class="uaa-detail-stats">
+          <div class="uaa-stats-item">
+            <span class="uaa-stats-label">字数</span>
+            <span class="uaa-stats-value">{{ book.word_count }}</span>
+          </div>
+          <div class="uaa-stats-item">
+            <span class="uaa-stats-label">章节</span>
+            <span class="uaa-stats-value">{{ book.chapter_count }}</span>
+          </div>
+          {% if book.volume_count %}
+          <div class="uaa-stats-item">
+            <span class="uaa-stats-label">分卷</span>
+            <span class="uaa-stats-value">{{ book.volume_count }}</span>
+          </div>
+          {% endif %}
+          <div class="uaa-stats-item">
+            <span class="uaa-stats-label">评分</span>
+            <span class="uaa-stats-value">★ {{ book.rating|floatformat:1 }}</span>
+          </div>
+          <div class="uaa-stats-item">
+            <span class="uaa-stats-label">浏览</span>
+            <span class="uaa-stats-value">{{ book.view_count }}</span>
+          </div>
+        </div>
+
+        <div class="uaa-detail-cats">
+          {% for c in book.categories.all %}
+          <a href="/category/{{ c.slug }}" class="uaa-tag uaa-tag-cat">{{ c.name }}</a>
+          {% endfor %}
+          {% for t in book.tags.all|slice:":8" %}
+          <a href="/tag/{{ t.name }}" class="uaa-tag uaa-tag-tag">{{ t.name }}</a>
+          {% endfor %}
+        </div>
+
+        <div class="uaa-detail-intro">
+          <h3>简介</h3>
+          <p>{{ book.intro|linebreaksbr }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 分卷 + 最新章节 -->
+    {% if book.volumes.all %}
+    {% for vol in book.volumes.all %}
+    <section class="uaa-section">
+      <div class="uaa-section-header">
+        <h2 class="uaa-section-title">分卷：{{ vol.name }}</h2>
+      </div>
+      <ul class="uaa-chapter-list">
+        {% for ch in vol.chapters.all|slice:":50" %}
+        <li>
+          <a href="/book/{{ book.slug }}/chapter/{{ ch.order_index }}">{{ ch.title }}</a>
+          <span class="uaa-ch-time">{{ ch.fetched_at|date:"Y-m-d" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endfor %}
+    {% else %}
+    <section class="uaa-section">
+      <div class="uaa-section-header">
+        <h2 class="uaa-section-title">最新章节</h2>
+        <span class="uaa-section-more"><a href="/book/{{ book.slug }}/toc">完整目录 →</a></span>
+      </div>
+      <ul class="uaa-chapter-list">
+        {% for ch in latest_chapters %}
+        <li>
+          <a href="/book/{{ book.slug }}/chapter/{{ ch.order_index }}">{{ ch.title }}</a>
+          <span class="uaa-ch-time">{{ ch.fetched_at|date:"Y-m-d" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="uaa-footer">
+    <div class="uaa-container">
+      <p class="uaa-footer-copy">&copy; {{ now|date:"Y" }} {{ site.name|default:"笔趣阁" }} · All rights reserved.</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>

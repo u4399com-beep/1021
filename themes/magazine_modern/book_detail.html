@@ -1,0 +1,107 @@
+<!-- ============================================================
+     Magazine Modern — Book Detail Page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ book.title }} by {{ book.author.name|default:"Unknown" }} — {{ site.name|default:"NOVEL MAG" }}</title>
+  <meta name="description" content="{{ book.intro|truncatechars:160 }}">
+  <meta name="keywords" content="{{ book.title }},{{ book.author.name|default:'' }},{% for t in book.tags.all %}{{ t.name }},{% endfor %}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ book.title }}">
+  <meta property="og:description" content="{{ book.intro|truncatechars:200 }}">
+  <meta property="og:type" content="book">
+  <meta property="book:author" content="{{ book.author.name|default:'' }}">
+  <meta property="book:isbn" content="">
+  <meta property="og:image" content="{{ book.cover.url|default:book.cover_url }}">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "{{ book.title }}",
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:'' }}" },
+    "description": "{{ book.intro|escapejs }}",
+    "inLanguage": "zh-CN",
+    "image": "{{ book.cover.url|default:book.cover_url }}",
+    "bookFormat": "https://schema.org/BookFormatType/Hardcover"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+SC:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="mag-body">
+  <header class="mag-header">
+    <div class="mag-container">
+      <div class="brand">
+        <span class="brand-mark">N°</span>
+        <span class="brand-name">{{ site.name|default:"NOVEL MAG" }}</span>
+      </div>
+      <nav class="mag-nav">
+        <a href="/">FEATURES</a>
+        <a href="/category/latest">LATEST</a>
+        <a href="/book/{{ book.slug }}/toc">目录</a>
+        <a href="/search">SEARCH</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mag-container">
+    <article class="mag-book-hero">
+      <div class="hero-cover-wrap">
+        <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}" class="hero-cover-img">
+        <span class="hero-tag">{{ book.categories.first.name|default:"NOVEL" }}</span>
+      </div>
+      <div class="hero-text">
+        <p class="hero-eyebrow">FEATURED NOVEL · {{ book.get_status_display|upper }}</p>
+        <h1 class="hero-title">{{ book.title }}</h1>
+        <p class="hero-author">by <strong>{{ book.author.name|default:"佚名" }}</strong></p>
+        <div class="hero-meta-row">
+          <span class="meta-item"><span class="meta-label">字数</span> {{ book.word_count }}</span>
+          <span class="meta-item"><span class="meta-label">章节</span> {{ book.chapter_count }}</span>
+          <span class="meta-item"><span class="meta-label">评分</span> ★ {{ book.rating|floatformat:1 }}</span>
+          <span class="meta-item"><span class="meta-label">浏览</span> {{ book.view_count }}</span>
+        </div>
+        <p class="hero-intro">{{ book.intro|truncatechars:280|linebreaksbr }}</p>
+        <div class="hero-tags">
+          {% for c in book.categories.all %}<a href="/category/{{ c.slug }}" class="cat-pill">{{ c.name }}</a>{% endfor %}
+          {% for t in book.tags.all|slice:":5" %}<a href="/tag/{{ t.name }}" class="tag-pill">{{ t.name }}</a>{% endfor %}
+        </div>
+        <div class="hero-actions">
+          <a href="/book/{{ book.slug }}/chapter/1" class="btn-primary">开始阅读 →</a>
+          <a href="/book/{{ book.slug }}/toc" class="btn-secondary">章节目录</a>
+          <a href="/download/{{ book.slug }}" class="btn-tertiary">下载</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="mag-latest-chapters">
+      <h2 class="section-h">LATEST CHAPTERS</h2>
+      <ul class="ch-list">
+        {% for ch in latest_chapters %}
+        <li>
+          <span class="ch-num">#{{ ch.order_index }}</span>
+          <a href="/book/{{ book.slug }}/chapter/{{ ch.order_index }}">{{ ch.title }}</a>
+          <span class="ch-time">{{ ch.fetched_at|date:"Y-m-d" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </main>
+
+  <footer class="mag-footer">
+    <div class="mag-container">
+      <p>NOVEL MAG · &copy; {{ now|date:"Y" }} {{ site.name|default:"NOVEL MAG" }}</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>

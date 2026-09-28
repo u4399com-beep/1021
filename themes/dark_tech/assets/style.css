@@ -1,0 +1,175 @@
+/* Dark Tech — 暗黑科技主题样式 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0c29;
+  --bg-2: #1a1448;
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.1);
+  --neon: #00ffff;
+  --neon-2: #ff00ff;
+  --neon-3: #ffff00;
+  --text: #e0e7ff;
+  --muted: #8b9dc3;
+}
+
+body {
+  font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text); line-height: 1.6;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(to right, rgba(0,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,0,255,0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.grid-bg {
+  position: fixed; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(0,255,255,0.15), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,0,255,0.15), transparent 40%);
+  z-index: 0;
+}
+
+.dark-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+.dark-header {
+  background: rgba(15,12,41,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+  position: sticky; top: 0; z-index: 100;
+}
+.dark-header .dark-container {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.logo-icon {
+  color: var(--neon); font-size: 28px;
+  text-shadow: 0 0 12px var(--neon);
+}
+.brand-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px; font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 8px rgba(0,255,255,0.5);
+  letter-spacing: 2px;
+}
+.dark-nav { display: flex; gap: 24px; }
+.dark-nav a {
+  color: var(--text); text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  padding: 8px 12px; border-radius: 4px;
+  transition: all .2s;
+}
+.dark-nav a:hover {
+  color: var(--neon); background: rgba(0,255,255,0.1);
+  text-shadow: 0 0 6px var(--neon);
+}
+.search-box { display: flex; }
+.search-box input {
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px 0 0 4px;
+  padding: 8px 12px; width: 180px; font-family: inherit;
+}
+.search-box button {
+  background: linear-gradient(135deg, var(--neon), var(--neon-2));
+  color: #0f0c29; border: 0; padding: 8px 14px;
+  border-radius: 0 4px 4px 0; cursor: pointer;
+  font-size: 16px;
+}
+
+main { padding: 40px 0; }
+
+.neon-banner {
+  text-align: center; padding: 48px 0;
+  margin-bottom: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0,255,255,0.05), rgba(255,0,255,0.05));
+}
+.neon-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 42px; font-weight: 900;
+  color: var(--neon);
+  letter-spacing: 4px;
+  text-shadow: 0 0 24px rgba(0,255,255,0.7);
+  margin-bottom: 12px;
+}
+.neon-sub {
+  font-size: 18px; color: var(--muted);
+  letter-spacing: 4px;
+}
+
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+.neon-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  transition: all .3s;
+  backdrop-filter: blur(10px);
+}
+.neon-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--neon);
+  box-shadow: 0 0 24px rgba(0,255,255,0.3);
+}
+.card-cover { position: relative; }
+.card-cover img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block;
+  background: #1a1448;
+}
+.card-overlay {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(15,12,41,0.85);
+  padding: 4px 10px; border-radius: 4px;
+  border: 1px solid var(--neon);
+}
+.card-overlay .rank {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--neon); font-size: 13px; font-weight: 700;
+}
+.card-body { padding: 16px; }
+.card-body h3 {
+  font-size: 17px; font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-body .author { color: var(--neon-2); font-size: 13px; margin-bottom: 8px; }
+.card-body .intro { color: var(--muted); font-size: 13px; line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  margin-bottom: 12px;
+}
+.card-body .meta { display: flex; gap: 8px; margin-bottom: 12px; }
+.card-body .meta .status {
+  font-size: 11px; padding: 2px 8px; border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.status-completed { background: rgba(0,255,136,0.1); color: #00ff88; }
+.status-ongoing { background: rgba(255,170,0,0.1); color: #ffaa00; }
+.card-body .meta .chapters { font-size: 11px; color: var(--muted); padding: 2px 8px; }
+.read-btn {
+  display: block; text-align: center;
+  background: linear-gradient(135deg, var(--neon), var(--neon-2));
+  color: #0f0c29; padding: 8px; border-radius: 4px;
+  text-decoration: none; font-weight: 700; font-size: 13px;
+  letter-spacing: 2px; transition: opacity .2s;
+}
+.read-btn:hover { opacity: .85; }
+
+.dark-footer {
+  text-align: center; padding: 32px 0;
+  margin-top: 64px; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .neon-title { font-size: 28px; }
+  .dark-header .dark-container { flex-wrap: wrap; }
+  .search-box { width: 100%; }
+}

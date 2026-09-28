@@ -1,0 +1,67 @@
+<!-- ============================================================
+     Magazine Modern — Chapter Reading Page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ chapter.title }} — {{ book.title }} — {{ site.name|default:"NOVEL MAG" }}</title>
+  <meta name="description" content="{{ chapter.content|truncatechars:160|striptags }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ chapter.title }}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ chapter.title|escapejs }}",
+    "isPartOf": { "@type": "Book", "name": "{{ book.title|escapejs }}" },
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:''|escapejs }}" },
+    "inLanguage": "zh-CN"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+SC:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="mag-body mag-reading">
+  <header class="mag-header">
+    <div class="mag-container">
+      <div class="brand">
+        <span class="brand-mark">N°</span>
+        <span class="brand-name">{{ site.name|default:"NOVEL MAG" }}</span>
+      </div>
+      <nav class="mag-nav">
+        <a href="/book/{{ book.slug }}">← BACK TO BOOK</a>
+        <a href="/book/{{ book.slug }}/toc">TOC</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mag-container">
+    <article class="mag-chapter">
+      <p class="ch-eyebrow">{{ book.title|upper }} · CHAPTER {{ chapter.order_index }}</p>
+      <h1 class="ch-h1">{{ chapter.title }}</h1>
+      <div class="ch-content">
+        {{ chapter.content|safe }}
+      </div>
+      <nav class="ch-nav">
+        {% if prev_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ prev_chapter.order_index }}" class="nav-prev">← PREV</a>{% endif %}
+        <a href="/book/{{ book.slug }}/toc" class="nav-toc">TABLE OF CONTENTS</a>
+        {% if next_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ next_chapter.order_index }}" class="nav-next">NEXT →</a>{% endif %}
+      </nav>
+    </article>
+  </main>
+
+  <footer class="mag-footer">
+    <div class="mag-container">
+      <p>NOVEL MAG · &copy; {{ now|date:"Y" }} {{ site.name|default:"NOVEL MAG" }}</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>
