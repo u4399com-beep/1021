@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: novel-system 1.0\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "工作台"
+msgstr "Dashboard"
+
+msgid "小说管理"
+msgstr "Novels"
+
+msgid "采集规则"
+msgstr "Crawler Rules"
+
+msgid "采集任务"
+msgstr "Crawler Tasks"
+
+msgid "内容清洗"
+msgstr "Content Cleaner"
+
+msgid "智能分类"
+msgstr "Smart Classifier"
+
+msgid "站群管理"
+msgstr "Sites"
+
+msgid "主题模板"
+msgstr "Themes"
+
+msgid "文件下载"
+msgstr "Downloads"
+
+msgid "SEO 检测"
+msgstr "SEO Audit"
+
+msgid "混淆与伪原创"
+msgstr "Obfuscation"
+
+msgid "用户与权限"
+msgstr "Users & Roles"
+
+msgid "系统设置"
+msgstr "System Settings"
+
+msgid "登录"
+msgstr "Login"
+
+msgid "退出登录"
+msgstr "Logout"
+
+msgid "确认"
+msgstr "Confirm"
+
+msgid "取消"
+msgstr "Cancel"
+
+msgid "保存"
+msgstr "Save"
+
+msgid "删除"
+msgstr "Delete"
+
+msgid "编辑"
+msgstr "Edit"
+
+msgid "新增"
+msgstr "Add"
+
+msgid "搜索"
+msgstr "Search"
+
+msgid "测试"
+msgstr "Test"
+
+msgid "立即执行"
+msgstr "Run Now"
+
+msgid "暂停"
+msgstr "Pause"
+
+msgid "停止"
+msgstr "Stop"
+
+msgid "状态"
+msgstr "Status"
+
+msgid "进度"
+msgstr "Progress"

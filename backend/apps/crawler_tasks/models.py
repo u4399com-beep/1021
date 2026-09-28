@@ -1,0 +1,231 @@
+"""采集任务模型。
+
+设计要点：
+- 一个任务绑定一组规则 + 一个目标 URL 或 URL 范围
+- 任务有完整的生命周期：draft → queued → running → paused → stopped → done → error
+- 任务执行参数：threads_min/threads_max, interval_min/max, mode(full/incremental)
+- 任务进度记录：已采集 URL 数 / 失败数 / 跳过数
+- 每次运行产生一个 TaskRun 记录，便于多次重试历史追溯
+"""
+from __future__ import annotations
+
+from django.db import models
+from django.utils import timezone
+
+from apps.crawler_rules.models import CrawlerRule
+
+
+class CrawlerTask(models.Model):
+    """采集任务定义。"""
+
+    class Mode(models.TextChoices):
+        FULL = "full", "完全覆盖"
+        INCREMENTAL = "incremental", "增量更新"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "草稿"
+        QUEUED = "queued", "已入队"
+        RUNNING = "running", "运行中"
+        PAUSED = "paused", "已暂停"
+        STOPPED = "stopped", "已停止"
+        DONE = "done", "完成"
+        ERROR = "error", "失败"
+
+    name = models.CharField("任务名", max_length=128)
+    enabled = models.BooleanField("启用", default=True)
+
+    # 规则绑定
+    list_rule = models.ForeignKey(
+        CrawlerRule, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="tasks_as_list", limit_choices_to={"target": "list"},
+    )
+    book_rule = models.ForeignKey(
+        CrawlerRule, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="tasks_as_book", limit_choices_to={"target": "book"},
+    )
+    toc_rule = models.ForeignKey(
+        CrawlerRule, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="tasks_as_toc", limit_choices_to={"target": "toc"},
+    )
+    chapter_rule = models.ForeignKey(
+        CrawlerRule, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="tasks_as_chapter", limit_choices_to={"target": "chapter"},
+    )
+
+    # URL 范围
+    target_urls = models.JSONField("目标URL列表", default=list, help_text="单本/多本URL数组")
+    url_range = models.JSONField(
+        "URL范围配置", default=dict, blank=True,
+        help_text="支持分页范围 / 章节范围，例 {start:1,end:100,step:1}",
+    )
+
+    # 执行参数
+    mode = models.CharField("模式", max_length=16, choices=Mode.choices, default=Mode.FULL)
+    threads_min = models.IntegerField("最小线程", default=2)
+    threads_max = models.IntegerField("最大线程", default=5)
+    interval_min = models.FloatField("最小间隔(秒)", default=1.0)
+    interval_max = models.FloatField("最大间隔(秒)", default=3.0)
+
+    # 输出选项
+    content_storage = models.CharField(
+        "章节内容存储方式",
+        max_length=8,
+        choices=[("db", "数据库"), ("txt", "TXT文件"), ("both", "两者")],
+        default="db",
+    )
+    cover_format = models.CharField("封面格式", max_length=8, default="webp")
+    download_cover = models.BooleanField("下载封面", default=True)
+
+    # 智能选项
+    enable_disorder = models.BooleanField("章节乱序重排", default=False)
+    enable_dedup_by_url = models.BooleanField("按URL去重", default=True)
+    enable_dedup_by_title = models.BooleanField("按章节名去重", default=False)
+    enable_cleaner = models.BooleanField("启用内容清洗", default=True)
+    enable_classifier = models.BooleanField("启用智能分类", default=True)
+    enable_finished_detection = models.BooleanField("完结检测", default=True)
+
+    # 状态机
+    status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.DRAFT)
+    celery_task_id = models.CharField("Celery Task ID", max_length=128, blank=True)
+
+    # ─── 调度配置 ────────────────────────────────────────────────
+    # 启用后，任务会按 cron 表达式自动调度执行
+    schedule_enabled = models.BooleanField("启用定时调度", default=False)
+    schedule_cron = models.CharField(
+        "Cron 表达式",
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="标准 5 段 cron：minute hour day-of-month month day-of-week。例：'0 3 * * *' = 每天 3 点"
+    )
+    schedule_next_run = models.DateTimeField("下次执行时间", null=True, blank=True)
+    schedule_last_run = models.DateTimeField("上次执行时间", null=True, blank=True)
+    schedule_max_runs = models.IntegerField("最大执行次数", default=0, help_text="0 = 无限")
+    schedule_run_count = models.IntegerField("已执行次数", default=0)
+
+    # 并发优先级 — 全局并发控制器使用 (priority, max_concurrent) 决定是否启动
+    priority = models.IntegerField("任务优先级", default=50,
+        help_text="0-100，100 最高。高优先级任务会先获得执行槽位")
+    max_concurrent_per_class = models.IntegerField(
+        "同类任务最大并发数", default=3,
+        help_text="同一 source 站点的任务最多同时运行 N 个。0 = 不限制"
+    )
+    exclusive = models.BooleanField("独占执行", default=False,
+        help_text="为 True 时，本任务运行期间不允许其他任务运行（适合大型全量采集）")
+
+    # ─── v29: 失败自动重试（差异化策略） ──────────────────────
+    retry_max = models.IntegerField("最大重试次数", default=3,
+        help_text="任务整体失败时的重试上限（0=不重试）")
+    retry_delay = models.FloatField("重试间隔(秒)", default=60,
+        help_text="每次重试前等待秒数")
+    retry_backoff = models.FloatField("重试退避倍数", default=2.0,
+        help_text="每次重试间隔在上一次基础上乘以这个倍数")
+    retry_strategy = models.CharField("重试策略", max_length=32, default="error_aware",
+        choices=[("always", "总是重试"), ("error_aware", "按错误类型判定"), ("never", "从不重试")],
+        help_text="error_aware: 对验证码/限流类错误重试，对内容缺失类不重试")
+    retry_count = models.IntegerField("已重试次数", default=0)
+    retry_history = models.JSONField("重试历史", default=list, blank=True,
+        help_text='[{"attempt":1, "error":"...", "ts":"..."}]')
+
+    # ─── v34: 任务依赖（A 完成自动触发 B） ──────────────────
+    depends_on = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="downstream_tasks",
+        help_text="本任务会在前置任务成功完成后自动触发",
+    )
+    trigger_on_dependency = models.BooleanField("启用依赖触发", default=False,
+        help_text="为 True 时，depends_on 任务完成后会自动触发本任务")
+    trigger_condition = models.CharField("触发条件", max_length=16, default="success",
+        choices=[("success", "成功"), ("failure", "失败"), ("either", "成功或失败")],
+        help_text="前置任务满足此条件才触发")
+
+    # 进度统计
+    total_items = models.IntegerField("总数", default=0)
+    processed_items = models.IntegerField("已处理", default=0)
+    success_items = models.IntegerField("成功", default=0)
+    failed_items = models.IntegerField("失败", default=0)
+    skipped_items = models.IntegerField("跳过", default=0)
+
+    started_at = models.DateTimeField("开始时间", null=True, blank=True)
+    finished_at = models.DateTimeField("结束时间", null=True, blank=True)
+    last_error = models.TextField("最近错误", blank=True)
+
+    notes = models.TextField("备注", blank=True)
+    created_by = models.ForeignKey(
+        "account.User", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="crawler_tasks"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "crawler_task"
+        verbose_name = "采集任务"
+        verbose_name_plural = verbose_name
+        ordering = ("-id",)
+        indexes = [
+            models.Index(fields=["status", "enabled"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"[{self.get_status_display()}] {self.name}"
+
+    # --- lifecycle helpers ---
+    def mark_running(self, celery_id: str):
+        self.status = self.Status.RUNNING
+        self.celery_task_id = celery_id
+        self.started_at = timezone.now()
+        self.save(update_fields=["status", "celery_task_id", "started_at"])
+
+    def mark_paused(self):
+        self.status = self.Status.PAUSED
+        self.save(update_fields=["status"])
+
+    def mark_stopped(self):
+        self.status = self.Status.STOPPED
+        self.finished_at = timezone.now()
+        self.save(update_fields=["status", "finished_at"])
+
+    def mark_done(self):
+        self.status = self.Status.DONE
+        self.finished_at = timezone.now()
+        self.save(update_fields=["status", "finished_at"])
+
+    def mark_error(self, err: str):
+        self.status = self.Status.ERROR
+        self.last_error = err
+        self.finished_at = timezone.now()
+        self.save(update_fields=["status", "last_error", "finished_at"])
+
+    def inc_progress(self, *, processed=0, success=0, failed=0, skipped=0):
+        CrawlerTask.objects.filter(pk=self.pk).update(
+            processed_items=models.F("processed_items") + processed,
+            success_items=models.F("success_items") + success,
+            failed_items=models.F("failed_items") + failed,
+            skipped_items=models.F("skipped_items") + skipped,
+        )
+
+
+class CrawlerTaskLog(models.Model):
+    """每次任务的运行日志条目。"""
+
+    task = models.ForeignKey(CrawlerTask, on_delete=models.CASCADE, related_name="logs")
+    level = models.CharField("级别", max_length=8, default="info")
+    message = models.TextField("日志内容")
+    url = models.URLField("相关URL", blank=True)
+    payload = models.JSONField("附加数据", default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "crawler_task_log"
+        verbose_name = "采集任务日志"
+        verbose_name_plural = verbose_name
+        ordering = ("-id",)
+
+    def __str__(self) -> str:
+        return f"[{self.level}] {self.task.name}: {self.message[:50]}"
+
+
+# v43: Re-export TaskTemplate for Django model discovery
+from .templates import TaskTemplate  # noqa: E402

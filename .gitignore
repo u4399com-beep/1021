@@ -1,2 +1,58 @@
+<<<<<<< HEAD
 skills/
 node_modules/
+=======
+# Environments & secrets
+.env
+.env.local
+.env.*.local
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.egg-info/
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Docker volumes
+docker/volumes/
+pg_data/
+redis_data/
+
+# Logs
+logs/
+*.log
+
+# Media (keep .gitkeep)
+media/uploads/*
+media/downloads/*
+media/chapters/*
+!media/uploads/.gitkeep
+!media/downloads/.gitkeep
+!media/chapters/.gitkeep
+
+# Built themes (regenerated)
+themes/*/dist/
+>>>>>>> origin/main

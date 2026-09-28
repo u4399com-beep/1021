@@ -1,0 +1,45 @@
+{
+  "name": "novel-admin",
+  "version": "1.0.0",
+  "description": "Vue 3 admin panel for novel-system",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --host",
+    "lint": "eslint src --ext .vue,.js,.ts --fix"
+  },
+  "dependencies": {
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.5",
+    "pinia": "^2.2.2",
+    "element-plus": "^2.8.4",
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.7",
+    "echarts": "^5.5.1",
+    "vue-echarts": "^7.0.3",
+    "dayjs": "^1.11.13",
+    "@vueuse/core": "^11.1.0",
+    "nprogress": "^0.2.0",
+    "qs": "^6.13.0",
+    "lodash-es": "^4.17.21",
+    "codemirror": "^5.65.16",
+    "vue-codemirror": "^6.1.1",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "monaco-editor": "^0.52.0",
+    "@guolao/vue-monaco-editor": "^1.5.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitejs/plugin-vue-jsx": "^4.0.1",
+    "vite": "^5.4.8",
+    "vite-plugin-compression": "^0.5.1",
+    "unplugin-auto-import": "^0.18.3",
+    "unplugin-vue-components": "^0.27.4",
+    "sass": "^1.79.4",
+    "eslint": "^9.11.0",
+    "eslint-plugin-vue": "^9.28.0"
+  }
+}

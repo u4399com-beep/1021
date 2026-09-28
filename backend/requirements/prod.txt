@@ -1,0 +1,9 @@
+-r base.txt
+
+# ---- Production extras ----
+gunicorn==23.0.0
+uvicorn[standard]==0.30.6
+sentry-sdk==2.14.0
+whitenoise==6.7.0
+django-storages==1.14.4
+boto3==1.35.19
