@@ -272,3 +272,6 @@ class SuggestKeyword(models.Model):
 
 # v80: Re-export BookRating
 from .ratings import BookRating  # noqa: E402
+
+# v91: Re-export ChapterComment
+from .comments import ChapterComment  # noqa: E402
