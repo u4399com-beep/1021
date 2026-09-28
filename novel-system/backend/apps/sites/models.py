@@ -108,3 +108,6 @@ from .ab_test import ABTestConfig  # noqa: E402
 
 # v63: Re-export PageView
 from .traffic_stats import PageView  # noqa: E402
+
+# v70: Re-export AdSlot
+from .advertising import AdSlot  # noqa: E402

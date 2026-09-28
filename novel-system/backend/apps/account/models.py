@@ -174,3 +174,12 @@ class User(AbstractUser):
 
 # v51: Re-export IPWhitelist for model discovery
 from .ip_whitelist import IPWhitelist  # noqa: E402
+
+# v71: Re-export Reader models
+from .membership import ReaderProfile, Bookshelf, ReadingHistory  # noqa: E402
+
+# v72: Re-export Payment models
+from .payments import PaymentOrder, PaidChapter  # noqa: E402
+
+# v80: Re-export BookRating
+from apps.novel.ratings import BookRating  # noqa: E402

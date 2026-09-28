@@ -269,3 +269,6 @@ class SuggestKeyword(models.Model):
 
     def __str__(self) -> str:
         return f"{self.keyword} ({self.source}) → {self.main_slug}"
+
+# v80: Re-export BookRating
+from .ratings import BookRating  # noqa: E402

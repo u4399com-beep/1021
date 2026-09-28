@@ -77,3 +77,41 @@ urlpatterns += [
     path("integrity/", integrity_check, name="integrity-check"),
     path("integrity/repair/", repair_counts, name="repair-counts"),
 ]
+
+# v69-v82 endpoints
+from .v69_endpoints import (
+    ad_slots_for_page, ai_generate_book_rule, ai_generate_chapter_rule,
+    ai_generate_list_rule, cluster_status, create_payment_order,
+    extract_tags, import_books, rate_book, reader_profile, reader_register,
+    recent_notifications, reading_themes, rule_presets, run_benchmark,
+)
+from .v54_endpoints import *  # keep v54-v67 imports working
+
+urlpatterns += [
+    # v69
+    path("ai/generate-list-rule/", ai_generate_list_rule, name="ai-list-rule"),
+    path("ai/generate-book-rule/", ai_generate_book_rule, name="ai-book-rule"),
+    path("ai/generate-chapter-rule/", ai_generate_chapter_rule, name="ai-chapter-rule"),
+    # v70
+    path("ads/for-page/", ad_slots_for_page, name="ads-for-page"),
+    # v71-v72
+    path("reader/register/", reader_register, name="reader-register"),
+    path("reader/<int:reader_id>/", reader_profile, name="reader-profile"),
+    path("payment/create-order/", create_payment_order, name="create-payment-order"),
+    # v74
+    path("cluster/status/", cluster_status, name="cluster-status"),
+    # v75
+    path("import/books/", import_books, name="import-books"),
+    # v76
+    path("notifications/recent/", recent_notifications, name="recent-notifications"),
+    # v77
+    path("rule-presets/", rule_presets, name="rule-presets"),
+    # v78
+    path("reading-themes/", reading_themes, name="reading-themes"),
+    # v80
+    path("rate-book/", rate_book, name="rate-book"),
+    # v81
+    path("extract-tags/", extract_tags, name="extract-tags"),
+    # v82
+    path("benchmark/", run_benchmark, name="run-benchmark"),
+]
