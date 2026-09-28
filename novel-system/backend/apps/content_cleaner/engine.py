@@ -61,11 +61,19 @@ class ContentCleaner:
         except Exception:
             soup = BeautifulSoup(html_text, "html.parser")
 
-        # Remove script/style/iframe/ins(ad)
+        # P1 fix: Remove ad elements FIRST (before stripping class/id attributes)
+        for sel in [
+            "[class*=ad-]", "[class*=ad_]", "[class*=advert]",
+            "[id*=ad-]", "[id*=ad_]", "[id*=advert]",
+            "[class*=recommend]", "[class*=promotion]", "[class*=copyright]",
+        ]:
+            for el in soup.select(sel):
+                el.decompose()
+        # Remove script/style/iframe
         for tag in soup(["script", "style", "iframe", "ins", "noscript"]):
             tag.decompose()
 
-        # Whitelist filter
+        # Whitelist filter — AFTER ad removal
         for tag in soup.find_all(True):
             if tag.name not in ALLOWED_TAGS:
                 tag.unwrap()
@@ -75,6 +83,11 @@ class ContentCleaner:
             for attr in list(tag.attrs.keys()):
                 if attr not in allowed:
                     del tag[attr]
+            # P1 fix: Sanitize href attributes — block javascript: scheme
+            if tag.name == "a" and "href" in tag.attrs:
+                href = tag.attrs["href"]
+                if href and href.lower().strip().startswith(("javascript:", "data:", "vbscript:")):
+                    del tag.attrs["href"]
 
         # Remove common ad patterns by class/id
         for sel in [

@@ -16,10 +16,18 @@ load_dotenv(BASE_DIR / ".env")
 # ------------------------------------------------------------------
 # Security
 # ------------------------------------------------------------------
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-change-me-in-prod-please")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("DJANGO_SECRET_KEY environment variable must be set — no insecure defaults allowed")
 DEBUG = False
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "*").split(",") if h.strip()]
-CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ["*"]  # fallback only when env not set; override in production
+# CORS — do not allow all origins with credentials
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()
+] or ["http://localhost:5173", "http://localhost:80"]
 CORS_ALLOW_CREDENTIALS = True
 
 # ------------------------------------------------------------------
@@ -205,7 +213,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
+    "BLACKLIST_AFTER_ROTATION": False,  # Disabled — requires rest_framework_simplejwt.token_blacklist app
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -222,7 +230,8 @@ SPECTACULAR_SETTINGS = {
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
 REDIS_DB = int(os.environ.get("REDIS_DB", "0"))
-REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
+REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}" if REDIS_PASSWORD else f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
 CACHES = {
     "default": {

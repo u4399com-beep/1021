@@ -1,4 +1,5 @@
 """站群 API — 增删改查 + 主题切换 + 配置预览 + 重新生成 nginx 配置"""
+from rest_framework.permissions import IsAuthenticated
 from __future__ import annotations
 
 from rest_framework import viewsets, status
@@ -12,7 +13,7 @@ from .serializers import SiteDetailSerializer, SiteSerializer, ThemeSerializer
 class ThemeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Theme.objects.filter(is_active=True)
     serializer_class = ThemeSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=["post"])
     def preview(self, request, pk=None):
@@ -26,7 +27,7 @@ class ThemeViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SiteViewSet(viewsets.ModelViewSet):
     queryset = Site.objects.all()
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("is_active", "theme")
     search_fields = ("host", "name")
 

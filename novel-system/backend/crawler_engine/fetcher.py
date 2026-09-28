@@ -227,11 +227,12 @@ def test_url(url: str, *, tier: str | None = None) -> dict:
                 "html_size": len(html),
                 "error": None,
             })
-            if tier:  # only tested one tier
-                break
-            else:
-                # Found one that works, stop the chain
-                break
+            # P1 fix: when testing all tiers (tier=None), continue to next tier
+            # instead of breaking after first success. Only break when
+            # testing a specific tier (which should also continue to allow
+            # the fallback chain to be tested).
+            # Now: continue testing remaining tiers in all cases, so user
+            # sees the full fallback behavior.
         except Exception as e:
             results.append({
                 "tier": name, "success": False,

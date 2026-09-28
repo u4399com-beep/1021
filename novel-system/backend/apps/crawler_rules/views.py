@@ -1,4 +1,5 @@
 """采集规则 API。
+from rest_framework.permissions import IsAuthenticated
 
 提供规则 CRUD + 测试接口。测试接口会在请求时执行解析器，返回解析结果。
 """
@@ -22,14 +23,14 @@ from .serializers import CrawlerRuleSerializer, CrawlerSourceSerializer, RuleTes
 class CrawlerSourceViewSet(viewsets.ModelViewSet):
     queryset = CrawlerSource.objects.all()
     serializer_class = CrawlerSourceSerializer
-    permission_classes = []  # JWT globally applied; override for demo
+    permission_classes = [IsAuthenticated]
     search_fields = ("name", "host")
 
 
 class CrawlerRuleViewSet(viewsets.ModelViewSet):
     queryset = CrawlerRule.objects.select_related("source").all()
     serializer_class = CrawlerRuleSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("source", "target", "enabled")
     search_fields = ("name", "notes")
     ordering = ("priority", "id")
@@ -60,6 +61,9 @@ class CrawlerRuleViewSet(viewsets.ModelViewSet):
             - test_html (可选): 直接传入 HTML 字符串，跳过抓取
             - test_field (可选): 只测试某个字段
         """
+        # P0-3: SSRF protection — validate test_url before fetching
+        from crawler_engine.ssrf_guard import validate_url_or_raise
+        
         ser = RuleTestSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
@@ -81,6 +85,11 @@ class CrawlerRuleViewSet(viewsets.ModelViewSet):
         test_url = data.get("test_url", "").strip()
         html = test_html
         if not html and test_url:
+            # P0-3: SSRF protection — block private/metadata endpoints
+            try:
+                validate_url_or_raise(test_url)
+            except ValueError as e:
+                return Response({"error": f"SSRF blocked: {e}"}, status=403)
             try:
                 html = fetch_page_sync(test_url)
             except Exception as e:

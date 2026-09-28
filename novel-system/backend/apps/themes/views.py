@@ -18,7 +18,7 @@ from .engine import THEME_TEMPLATES, get_theme_path
 class ThemeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Theme.objects.filter(is_active=True)
     serializer_class = ThemeSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=["get"])
     def files(self, request, pk=None):

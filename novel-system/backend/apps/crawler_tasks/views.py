@@ -1,4 +1,5 @@
 """采集任务 API — 包括立即执行 / 暂停 / 停止 / 调整参数 / 日志查询"""
+from rest_framework.permissions import IsAuthenticated
 from __future__ import annotations
 
 from django.utils import timezone
@@ -22,7 +23,7 @@ class CrawlerTaskViewSet(
 
     queryset = CrawlerTask.objects.all()
     serializer_class = CrawlerTaskSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("status", "enabled", "mode")
     search_fields = ("name", "notes")
     ordering = ("-id",)

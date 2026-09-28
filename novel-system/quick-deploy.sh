@@ -80,6 +80,7 @@ done
 # ─── 6. 数据库迁移 + 初始化 ───
 echo ""
 echo "【6/8】数据库迁移 + 初始化种子数据..."
+docker compose exec -T backend python manage.py makemigrations --noinput
 docker compose exec -T backend python manage.py migrate --noinput
 docker compose exec -T backend python manage.py collectstatic --noinput
 docker compose exec -T backend python manage.py init_default_data

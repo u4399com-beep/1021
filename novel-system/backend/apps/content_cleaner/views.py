@@ -1,4 +1,5 @@
 """清洗 API — 规则 CRUD + 试清洗"""
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -16,7 +17,7 @@ class CleaningRuleSerializer(serializers.ModelSerializer):
 class CleaningRuleViewSet(viewsets.ModelViewSet):
     queryset = CleaningRule.objects.all()
     serializer_class = CleaningRuleSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("target", "strategy", "enabled")
     ordering = ("priority", "id")
 
@@ -42,6 +43,6 @@ class CleaningExecutionSerializer(serializers.ModelSerializer):
 class CleaningExecutionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CleaningExecution.objects.all()
     serializer_class = CleaningExecutionSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("rule", "target_type")
     ordering = ("-executed_at",)

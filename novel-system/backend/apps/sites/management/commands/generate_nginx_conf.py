@@ -101,10 +101,26 @@ class Command(BaseCommand):
             "themes_static_root": THEMES_STATIC_ROOT,
         })
         content = tpl.render(ctx)
-        out_path = Path(NGINX_SITES_DIR) / f"{site.host}.conf"
+        # P0-4: Sanitize host to prevent path traversal
+        import re
+        safe_host = re.sub(r'[^a-zA-Z0-9.\-]', '_', site.host)
+        if safe_host != site.host or '..' in site.host or '/' in site.host:
+            self.stdout.write(self.style.ERROR(
+                f"  ✗ Unsafe host '{site.host}' — skipping (path traversal blocked)"
+            ))
+            return
+        out_path = Path(NGINX_SITES_DIR) / f"{safe_host}.conf"
+        # Ensure the resolved path is within NGINX_SITES_DIR
+        try:
+            out_path.resolve().relative_to(Path(NGINX_SITES_DIR).resolve())
+        except ValueError:
+            self.stdout.write(self.style.ERROR(
+                f"  ✗ Path traversal detected for host '{site.host}' — skipping"
+            ))
+            return
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(content, encoding="utf-8")
-        self.stdout.write(f"  ✓ {site.host} → {out_path}")
+        self.stdout.write(f"  ✓ {safe_host} → {out_path}")
         if reload_nginx:
             self.reload_nginx()
 

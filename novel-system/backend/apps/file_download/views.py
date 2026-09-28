@@ -1,4 +1,5 @@
 """下载 API — 模板 CRUD + 触发下载"""
+from rest_framework.permissions import IsAuthenticated
 from __future__ import annotations
 
 from django.http import FileResponse, Http404
@@ -16,7 +17,7 @@ from .serializers import DownloadRecordSerializer, DownloadTemplateSerializer
 class DownloadTemplateViewSet(viewsets.ModelViewSet):
     queryset = DownloadTemplate.objects.all()
     serializer_class = DownloadTemplateSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("output_format", "enabled")
     search_fields = ("name",)
 
@@ -24,7 +25,7 @@ class DownloadTemplateViewSet(viewsets.ModelViewSet):
 class DownloadRecordViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DownloadRecord.objects.all()
     serializer_class = DownloadRecordSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("template", "book", "created_by")
     ordering = ("-id",)
 

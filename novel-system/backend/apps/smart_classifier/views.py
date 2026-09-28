@@ -1,4 +1,5 @@
 from rest_framework import serializers, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -21,7 +22,7 @@ class FinishedPatternSerializer(serializers.ModelSerializer):
 class CategoryKeywordViewSet(viewsets.ModelViewSet):
     queryset = CategoryKeyword.objects.all()
     serializer_class = CategoryKeywordSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filterset_fields = ("category_name",)
     search_fields = ("keyword",)
 
@@ -29,7 +30,7 @@ class CategoryKeywordViewSet(viewsets.ModelViewSet):
 class FinishedPatternViewSet(viewsets.ModelViewSet):
     queryset = FinishedPattern.objects.all()
     serializer_class = FinishedPatternSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
 
 
 class ClassifyTestViewSet(viewsets.ViewSet):
