@@ -1,0 +1,65 @@
+<!-- ============================================================
+     Minimal Rank — Chapter Reading Page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ chapter.title }} - {{ book.title }} - {{ site.name|default:"书榜" }}</title>
+  <meta name="description" content="{{ chapter.content|truncatechars:160|striptags }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ chapter.title }}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ chapter.title|escapejs }}",
+    "isPartOf": { "@type": "Book", "name": "{{ book.title|escapejs }}" },
+    "author": { "@type": "Person", "name": "{{ book.author.name|default:''|escapejs }}" },
+    "inLanguage": "zh-CN"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/detail.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="rank-body rank-reading">
+  <header class="rank-header">
+    <div class="rank-container">
+      <a href="/" class="brand">{{ site.name|default:"书榜" }}</a>
+      <nav>
+        <a href="/book/{{ book.slug }}">← 返回书页</a>
+        <a href="/book/{{ book.slug }}/toc">章节目录</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="rank-container rank-reading-main">
+    <article class="rank-chapter">
+      <p class="ch-eyebrow">{{ book.title }} · 第 {{ chapter.order_index }} 章</p>
+      <h1>{{ chapter.title }}</h1>
+      <div class="chapter-content">
+        {{ chapter.content|safe }}
+      </div>
+      <nav class="chapter-nav">
+        {% if prev_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ prev_chapter.order_index }}" class="nav-link">← 上一章</a>{% endif %}
+        <a href="/book/{{ book.slug }}/toc" class="nav-link nav-toc">查看目录</a>
+        {% if next_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ next_chapter.order_index }}" class="nav-link">下一章 →</a>{% endif %}
+      </nav>
+    </article>
+  </main>
+
+  <footer class="rank-footer">
+    <div class="rank-container">
+      <p>&copy; {{ now|date:"Y" }} {{ site.name|default:"书榜" }} · All rights reserved.</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>

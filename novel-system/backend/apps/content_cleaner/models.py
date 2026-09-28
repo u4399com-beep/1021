@@ -61,3 +61,7 @@ class CleaningExecution(models.Model):
         verbose_name = "清洗记录"
         verbose_name_plural = verbose_name
         ordering = ("-executed_at",)
+
+
+# v46: Re-export BannedKeyword for model discovery
+from .audit import BannedKeyword  # noqa: E402

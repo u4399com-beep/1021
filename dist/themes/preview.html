@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主题预览 — novel-system</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f0f2f5; padding: 20px; color: #1f2937;
+    }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    .sub { color: #6b7280; margin-bottom: 20px; font-size: 14px; }
+    .theme-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .theme-card {
+      background: #fff; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .theme-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .theme-head { padding: 16px; border-bottom: 1px solid #f0f0f0; }
+    .theme-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .theme-desc { font-size: 13px; color: #6b7280; line-height: 1.6; }
+    .theme-iframe {
+      width: 100%; height: 480px; border: 0; background: #fff;
+      transform: scale(1); transform-origin: top left;
+    }
+    .theme-actions { padding: 12px 16px; background: #fafafa; border-top: 1px solid #f0f0f0; display: flex; gap: 8px; }
+    .btn {
+      padding: 6px 14px; border-radius: 4px; font-size: 13px;
+      text-decoration: none; border: 1px solid #d1d5db; background: #fff;
+      color: #1f2937; cursor: pointer;
+    }
+    .btn-primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .btn-primary:hover { background: #2563eb; }
+    @media (max-width: 992px) { .theme-list { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>novel-system 主题预览</h1>
+  <p class="sub">点击 "在新窗口打开" 查看完整效果。下面 6 套主题都使用相同的 mock 数据。</p>
+
+  <div class="theme-list">
+
+    <div class="theme-card">
+      <div class="theme-head">
+        <div class="theme-name">uaa_clone — 笔趣阁蓝（浅蓝配色）</div>
+        <div class="theme-desc">克隆 uaa.com 风格，浅蓝顶栏 + 白底 + 淡灰边框。本次重点新增。</div>
+      </div>
+      <iframe class="theme-iframe" src="/themes/uaa_clone/index.html"></iframe>
+      <div class="theme-actions">
+        <a class="btn btn-primary" href="/themes/uaa_clone/index.html" target="_blank">在新窗口打开</a>
+        <a class="btn" href="/themes/uaa_clone/book_detail.html" target="_blank">书籍页</a>
+        <a class="btn" href="/themes/uaa_clone/chapter.html" target="_blank">章节页</a>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-head">
+        <div class="theme-name">simple_reading — 简约阅读</div>
+        <div class="theme-desc">白底 + 衬线标题 + 暗灰正文，类似豆瓣读书风格</div>
+      </div>
+      <iframe class="theme-iframe" src="/themes/simple_reading/index.html"></iframe>
+      <div class="theme-actions">
+        <a class="btn btn-primary" href="/themes/simple_reading/index.html" target="_blank">在新窗口打开</a>
+        <a class="btn" href="/themes/simple_reading/book_detail.html" target="_blank">书籍页</a>
+        <a class="btn" href="/themes/simple_reading/chapter.html" target="_blank">章节页</a>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-head">
+        <div class="theme-name">classic_shelf — 古典书架</div>
+        <div class="theme-desc">木纹背景 + 宋体 + 横向卷轴元素，国风</div>
+      </div>
+      <iframe class="theme-iframe" src="/themes/classic_shelf/index.html"></iframe>
+      <div class="theme-actions">
+        <a class="btn btn-primary" href="/themes/classic_shelf/index.html" target="_blank">在新窗口打开</a>
+        <a class="btn" href="/themes/classic_shelf/book_detail.html" target="_blank">书籍页</a>
+        <a class="btn" href="/themes/classic_shelf/chapter.html" target="_blank">章节页</a>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-head">
+        <div class="theme-name">magazine_modern — 杂志现代</div>
+        <div class="theme-desc">大图封面 + 粗体大标题 + 瀑布流，Flipboard 杂志风</div>
+      </div>
+      <iframe class="theme-iframe" src="/themes/magazine_modern/index.html"></iframe>
+      <div class="theme-actions">
+        <a class="btn btn-primary" href="/themes/magazine_modern/index.html" target="_blank">在新窗口打开</a>
+        <a class="btn" href="/themes/magazine_modern/book_detail.html" target="_blank">书籍页</a>
+        <a class="btn" href="/themes/magazine_modern/chapter.html" target="_blank">章节页</a>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-head">
+        <div class="theme-name">dark_tech — 暗黑科技</div>
+        <div class="theme-desc">深色背景 + 霓虹强调色 + 卡片瀑布流，二次元/网文站感</div>
+      </div>
+      <iframe class="theme-iframe" src="/themes/dark_tech/index.html"></iframe>
+      <div class="theme-actions">
+        <a class="btn btn-primary" href="/themes/dark_tech/index.html" target="_blank">在新窗口打开</a>
+        <a class="btn" href="/themes/dark_tech/book_detail.html" target="_blank">书籍页</a>
+        <a class="btn" href="/themes/dark_tech/chapter.html" target="_blank">章节页</a>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-head">
+        <div class="theme-name">minimal_rank — 极简榜单</div>
+        <div class="theme-desc">无尽列表 + 评分 + 标签云 + 排行榜，Goodreads 极简风</div>
+      </div>
+      <iframe class="theme-iframe" src="/themes/minimal_rank/index.html"></iframe>
+      <div class="theme-actions">
+        <a class="btn btn-primary" href="/themes/minimal_rank/index.html" target="_blank">在新窗口打开</a>
+        <a class="btn" href="/themes/minimal_rank/book_detail.html" target="_blank">书籍页</a>
+        <a class="btn" href="/themes/minimal_rank/chapter.html" target="_blank">章节页</a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

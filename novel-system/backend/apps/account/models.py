@@ -170,3 +170,7 @@ class User(AbstractUser):
         return set(
             self.roles.values_list("permissions__code", flat=True)
         )
+
+
+# v51: Re-export IPWhitelist for model discovery
+from .ip_whitelist import IPWhitelist  # noqa: E402

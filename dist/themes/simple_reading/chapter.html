@@ -1,0 +1,41 @@
+<!-- Chapter reading page — Simple Reading theme -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ chapter.title }} - {{ book.title }} - {{ site.name }}</title>
+  <meta name="description" content="{{ chapter.content|truncatechars:160|striptags }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/chapter.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1><a href="/">{{ site.name }}</a></h1>
+      <nav>
+        <a href="/book/{{ book.slug }}">返回书页</a>
+        <a href="/book/{{ book.slug }}/toc">章节目录</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container chapter-container">
+    <article class="chapter">
+      <h1>{{ chapter.title }}</h1>
+      <div class="content">
+        {{ chapter.content|safe }}
+      </div>
+      <div class="chapter-nav">
+        {% if prev_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ prev_chapter.order_index }}">上一章</a>{% endif %}
+        <a href="/book/{{ book.slug }}/toc">目录</a>
+        {% if next_chapter %}<a href="/book/{{ book.slug }}/chapter/{{ next_chapter.order_index }}">下一章</a>{% endif %}
+      </div>
+    </article>
+  </main>
+  {{ site.body_inject|safe }}
+</body>
+</html>

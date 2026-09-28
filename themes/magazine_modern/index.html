@@ -1,0 +1,78 @@
+<!-- ============================================================
+     Magazine Modern — 大图封面+粗体大标题+瀑布流，类似 Flipboard 杂志风
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site.site_title|default:"NOVEL MAG — 现代小说杂志" }}</title>
+  <meta name="description" content="{{ site.site_description|default:'NOVEL MAG · 现代小说杂志，每日精选优质网文。' }}">
+  <meta name="keywords" content="{{ site.site_keywords|default:'小说杂志,网文,精选,瀑布流' }}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <meta name="geo.region" content="{{ site.geo_region|default:'CN' }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+SC:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body class="mag-body">
+  <header class="mag-header">
+    <div class="mag-container">
+      <div class="brand">
+        <span class="brand-mark">N°</span>
+        <span class="brand-name">{{ site.name|default:"NOVEL MAG" }}</span>
+      </div>
+      <nav class="mag-nav">
+        <a href="/">FEATURES</a>
+        <a href="/category/latest">LATEST</a>
+        <a href="/category/xuanhuan">玄幻</a>
+        <a href="/category/dushi">都市</a>
+        <a href="/category/scifi">科幻</a>
+        <a href="/search">SEARCH</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mag-container">
+    <section class="hero">
+      <div class="hero-cover">
+        {% if featured_books.0 %}
+        <img src="{{ featured_books.0.cover.url|default:featured_books.0.cover_url }}" alt="{{ featured_books.0.title }}">
+        {% endif %}
+        <div class="hero-meta">
+          <span class="hero-tag">FEATURED</span>
+          <h1>{{ featured_books.0.title|default:"现代小说精选" }}</h1>
+          <p class="hero-author">{{ featured_books.0.author.name|default:"Editor's Pick" }}</p>
+          <a href="/book/{{ featured_books.0.slug|default:'' }}" class="hero-cta">READ NOW →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="waterfall">
+      <h2 class="section-h">最新瀑布</h2>
+      <div class="masonry">
+        {% for book in latest_books %}
+        <article class="mag-card" style="grid-row: span {{ forloop.counter|divisibleby:3|yesno:'8,5,11' }};">
+          <a href="/book/{{ book.slug }}">
+            <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}" loading="lazy">
+            <div class="card-meta">
+              <span class="card-tag">{{ book.categories.first.name|default:"小说" }}</span>
+              <h3>{{ book.title }}</h3>
+              <p class="card-author">by {{ book.author.name|default:"佚名" }}</p>
+              <p class="card-intro">{{ book.intro|truncatechars:140 }}</p>
+            </div>
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="mag-footer">
+    <div class="mag-container">
+      <p>NOVEL MAG · 现代小说杂志 · &copy; {{ now|date:"Y" }} {{ site.name }}</p>
+    </div>
+  </footer>
+  {{ site.body_inject|safe }}
+</body>
+</html>

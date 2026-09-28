@@ -225,3 +225,7 @@ class CrawlerTaskLog(models.Model):
 
     def __str__(self) -> str:
         return f"[{self.level}] {self.task.name}: {self.message[:50]}"
+
+
+# v43: Re-export TaskTemplate for Django model discovery
+from .templates import TaskTemplate  # noqa: E402

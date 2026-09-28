@@ -1,0 +1,53 @@
+.book-detail { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 24px 0; background: #fff; border-radius: 8px; padding: 24px; }
+.book-cover img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+.book-info h1 { font-size: 28px; margin-bottom: 12px; }
+.book-info .meta { color: #606266; font-size: 14px; margin-bottom: 12px; }
+.book-info .categories, .book-info .tags { font-size: 14px; margin-bottom: 8px; color: #909399; }
+.book-info .categories a, .book-info .tags a { color: #409eff; text-decoration: none; margin-right: 4px; }
+.book-info .intro { margin-top: 20px; padding-top: 16px; border-top: 1px dashed #ebeef5; }
+.book-info .intro h3 { font-size: 16px; margin-bottom: 8px; color: #606266; }
+.book-info .intro p { color: #606266; line-height: 1.8; }
+.actions { margin-top: 24px; display: flex; gap: 12px; }
+.actions a {
+  padding: 10px 24px; border-radius: 4px; text-decoration: none; font-size: 14px;
+}
+.btn-primary { background: #409eff; color: #fff; }
+.btn-secondary { background: #fff; color: #409eff; border: 1px solid #409eff; }
+.btn-tertiary { background: #f0f9eb; color: #67c23a; }
+
+.latest-chapters { margin-top: 32px; background: #fff; padding: 24px; border-radius: 8px; }
+.latest-chapters h2 { font-size: 18px; margin-bottom: 16px; border-bottom: 2px solid #409eff; padding-bottom: 8px; display: inline-block; }
+.latest-chapters ul { list-style: none; }
+.latest-chapters li {
+  padding: 10px 0; border-bottom: 1px dashed #ebeef5; font-size: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.latest-chapters li a { color: #303133; text-decoration: none; }
+.latest-chapters li a:hover { color: #409eff; }
+.latest-chapters li span { color: #c0c4cc; font-size: 12px; }
+
+.chapter-container { max-width: 800px; }
+.chapter { background: #fff; padding: 40px 48px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.chapter h1 {
+  text-align: center; font-size: 24px; margin-bottom: 32px; color: #303133;
+  border-bottom: 1px dashed #ebeef5; padding-bottom: 16px;
+}
+.chapter .content p {
+  font-size: 17px; line-height: 2.0; color: #303133; margin-bottom: 16px;
+  text-indent: 2em;
+}
+.chapter-nav {
+  margin-top: 48px; padding-top: 24px; border-top: 1px dashed #ebeef5;
+  display: flex; justify-content: space-between;
+}
+.chapter-nav a {
+  padding: 8px 20px; background: #f4f4f5; color: #303133; text-decoration: none;
+  border-radius: 4px; font-size: 14px;
+}
+.chapter-nav a:hover { background: #409eff; color: #fff; }
+
+@media (max-width: 768px) {
+  .book-detail { grid-template-columns: 1fr; }
+  .chapter { padding: 24px 16px; }
+  .chapter .content p { font-size: 15px; line-height: 1.9; }
+}

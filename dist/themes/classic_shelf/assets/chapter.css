@@ -1,0 +1,112 @@
+/* Classic Shelf — chapter reading + book detail */
+
+/* Book detail */
+.book-detail-cn {
+  display: grid; grid-template-columns: 280px 1fr; gap: 32px;
+  padding: 40px; background: linear-gradient(to bottom, #f5e6c8, #faf2dc);
+  border: 2px solid var(--wood-dark); border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
+.book-cover-cn { position: relative; }
+.book-cover-cn img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  border: 4px solid var(--wood-dark); border-radius: 4px;
+  box-shadow: 4px 4px 12px rgba(0,0,0,.2);
+}
+.scroll-deco {
+  position: absolute; bottom: -8px; left: -8px; right: -8px; height: 16px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  border-radius: 4px;
+}
+.book-meta-cn { padding-left: 16px; }
+.book-title-big {
+  font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 36px; color: var(--ink);
+  border-bottom: 3px double var(--gold);
+  padding-bottom: 12px; margin-bottom: 16px;
+}
+.meta-line {
+  font-size: 16px; color: var(--ink-light); margin-bottom: 12px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+}
+.meta-line .label {
+  font-family: 'ZCOOL XiaoWei', serif;
+  background: var(--wood-dark); color: #f5e6c8;
+  padding: 2px 10px; font-size: 13px; letter-spacing: 2px;
+  border-radius: 2px;
+}
+.meta-line .divider { color: var(--gold); margin: 0 4px; }
+.cat-link {
+  color: var(--red); text-decoration: none; margin: 0 4px;
+  border-bottom: 1px dashed var(--red);
+}
+.intro-cn { margin: 20px 0; padding: 16px 20px; background: rgba(255,255,255,.4); border-left: 4px solid var(--gold); }
+.intro-cn h3 {
+  font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 18px; color: var(--wood-dark); margin-bottom: 8px;
+}
+.intro-cn p { color: var(--ink-light); line-height: 1.9; }
+.actions-cn { margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap; }
+.btn-cn {
+  font-family: 'ZCOOL XiaoWei', serif;
+  padding: 10px 28px; text-decoration: none;
+  border-radius: 2px; font-size: 16px; letter-spacing: 4px;
+  transition: all .2s;
+}
+.btn-primary { background: var(--red); color: #f5e6c8; border: 2px solid var(--red); }
+.btn-primary:hover { background: var(--wood-dark); border-color: var(--wood-dark); }
+.btn-secondary { background: transparent; color: var(--wood-dark); border: 2px solid var(--wood-dark); }
+.btn-secondary:hover { background: var(--wood-dark); color: #f5e6c8; }
+.btn-tertiary { background: transparent; color: var(--gold); border: 2px solid var(--gold); }
+.btn-tertiary:hover { background: var(--gold); color: var(--wood-dark); }
+
+/* Chapter reading */
+.reading-body { background: var(--bg); }
+.reading-scroll {
+  margin: 32px auto; max-width: 800px;
+  background: linear-gradient(to bottom, #faf2dc, #f5e6c8, #faf2dc);
+  border: 2px solid var(--wood-dark);
+  border-radius: 8px; padding: 60px 60px 40px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  position: relative;
+}
+.scroll-handle, .scroll-handle-bottom {
+  position: absolute; left: -12px; right: -12px; height: 16px;
+  background: linear-gradient(to bottom, var(--wood-dark), var(--wood), var(--wood-dark));
+  border-radius: 8px;
+}
+.scroll-handle { top: -10px; }
+.scroll-handle-bottom { bottom: -10px; }
+
+.chapter-title-cn {
+  font-family: 'ZCOOL XiaoWei', serif;
+  text-align: center; font-size: 28px;
+  color: var(--ink); margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--gold);
+  letter-spacing: 6px;
+}
+.chapter-content-cn p {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px; line-height: 2.2; color: var(--ink);
+  margin-bottom: 20px; text-indent: 2em;
+}
+.chapter-nav-cn {
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px dashed var(--gold);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.chapter-nav-cn a {
+  font-family: 'ZCOOL XiaoWei', serif;
+  padding: 8px 20px; background: var(--wood); color: #f5e6c8;
+  text-decoration: none; border-radius: 2px; letter-spacing: 2px;
+  font-size: 16px; transition: all .2s;
+}
+.chapter-nav-cn a:hover { background: var(--red); }
+.chapter-nav-cn .toc-link { background: transparent; color: var(--wood-dark); border: 1px solid var(--wood-dark); }
+
+@media (max-width: 768px) {
+  .book-detail-cn { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
+  .reading-scroll { padding: 32px 20px 24px; }
+  .chapter-content-cn p { font-size: 15px; line-height: 1.9; }
+}

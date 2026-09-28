@@ -108,3 +108,4 @@ psutil==6.0.0
 
 # ---- File / epub ----
 ebooklib==0.18
+reportlab==4.2.0

@@ -71,6 +71,7 @@ MIDDLEWARE = [
     "apps.obfuscator.middleware.ObfuscatorMiddleware",
     "apps.account.rate_limit.RateLimitMiddleware",
     "apps.audit_log.middleware.AuditLogMiddleware",
+    "apps.dashboard.slow_query_monitor.SlowQueryLogger",
 ]
 
 ROOT_URLCONF = "config.urls"

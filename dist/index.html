@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>novel-system 小说管理系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #f0f2f5; color: #1f2937; }
+    .header { background: linear-gradient(135deg, #1e88e5, #1565c0); color: #fff; padding: 32px 24px; }
+    .header h1 { font-size: 28px; margin-bottom: 8px; }
+    .header p { opacity: 0.85; font-size: 14px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .section { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .section h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #1e88e5; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-decoration: none; color: inherit; transition: all .15s; display: block; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(30,136,229,.15); border-color: #1e88e5; }
+    .card h3 { font-size: 16px; margin-bottom: 8px; color: #1e88e5; }
+    .card p { font-size: 13px; color: #6b7280; line-height: 1.6; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .badge-new { background: #e3f2fd; color: #1e88e5; }
+    .badge-admin { background: #f3f4f6; color: #6b7280; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat { background: #fff; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .stat .num { font-size: 32px; font-weight: 700; color: #1e88e5; }
+    .stat .label { font-size: 13px; color: #6b7280; margin-top: 4px; }
+    iframe { width: 100%; height: 400px; border: 1px solid #e5e7eb; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <h1>📚 novel-system 小说管理系统</h1>
+      <p>Django + Vue + Celery + Playwright · 53 个迭代版本 · 48 个数据模型 · 6 套主题模板</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="stats">
+      <div class="stat"><div class="num">48</div><div class="label">Django Models</div></div>
+      <div class="stat"><div class="num">6</div><div class="label">主题模板</div></div>
+      <div class="stat"><div class="num">23</div><div class="label">API 路由</div></div>
+      <div class="stat"><div class="num">53</div><div class="label">迭代版本</div></div>
+    </div>
+
+    <div class="section">
+      <h2>🎨 主题预览</h2>
+      <div class="grid">
+        <a class="card" href="/themes/uaa_clone/index.html" target="_blank">
+          <span class="badge badge-new">新增</span>
+          <h3>uaa_clone 笔趣阁蓝</h3>
+          <p>浅蓝顶栏 + 白底 + 淡灰边框，笔趣阁经典配色。克隆 uaa.com 风格。</p>
+        </a>
+        <a class="card" href="/themes/simple_reading/index.html" target="_blank">
+          <h3>简约阅读</h3>
+          <p>白底+衬线标题+暗灰正文，类似豆瓣读书风格</p>
+        </a>
+        <a class="card" href="/themes/classic_shelf/index.html" target="_blank">
+          <h3>古典书架</h3>
+          <p>木纹背景+宋体+横向卷轴元素，国风</p>
+        </a>
+        <a class="card" href="/themes/magazine_modern/index.html" target="_blank">
+          <h3>杂志现代</h3>
+          <p>大图封面+粗体大标题+瀑布流，Flipboard 杂志风</p>
+        </a>
+        <a class="card" href="/themes/dark_tech/index.html" target="_blank">
+          <h3>暗黑科技</h3>
+          <p>深色背景+霓虹强调色+卡片瀑布流</p>
+        </a>
+        <a class="card" href="/themes/minimal_rank/index.html" target="_blank">
+          <h3>极简榜单</h3>
+          <p>无尽列表+评分+标签云+排行榜</p>
+        </a>
+      </div>
+      <p style="margin-top: 16px;">
+        <a href="/themes/preview.html" target="_blank" style="color: #1e88e5;">查看主题总览预览页 →</a>
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>🖥️ 后台管理 (Vue Admin)</h2>
+      <p>后台管理面板（需要后端 Django + PostgreSQL + Redis 运行后才能完整使用）</p>
+      <p style="margin-top: 8px;">
+        <a href="/admin/" style="color: #1e88e5;">打开后台管理 →</a>
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>📋 系统架构</h2>
+      <div class="grid">
+        <div class="card"><h3>后端</h3><p>Django 4.2 + DRF + JWT + Celery + PostgreSQL + Redis</p></div>
+        <div class="card"><h3>前端</h3><p>Vue 3 + Vite + Element Plus + ECharts + Monaco Editor</p></div>
+        <div class="card"><h3>采集引擎</h3><p>三段式 fallback: httpx → Firecrawl → Browser Use → Playwright</p></div>
+        <div class="card"><h3>部署</h3><p>Docker Compose 8 服务一键部署</p></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

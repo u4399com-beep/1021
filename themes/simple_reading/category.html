@@ -1,0 +1,43 @@
+<!-- Category page — Simple Reading theme -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ category.name|default:"分类" }} - {{ site.name }}</title>
+  <meta name="description" content="{{ category.name }}分类下的全部小说">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  {{ site.head_inject|safe }}
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1><a href="/">{{ site.name }}</a></h1>
+      <nav>
+        <a href="/">首页</a>
+        <a href="/category/xuanhuan">玄幻</a>
+        <a href="/category/qihuan">奇幻</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section>
+      <h2>{{ category.name|default:"分类" }}</h2>
+      <div class="book-grid">
+        {% for book in books %}
+        <article class="book-card">
+          <a href="/book/{{ book.slug }}">
+            <img src="{{ book.cover.url|default:book.cover_url|default:'/static/no-cover.png' }}" alt="{{ book.title }}">
+            <h3>{{ book.title }}</h3>
+            <p class="author">{{ book.author.name|default:"佚名" }}</p>
+            <p class="intro">{{ book.intro|truncatechars:80 }}</p>
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+  {{ site.body_inject|safe }}
+</body>
+</html>

@@ -1,0 +1,414 @@
+/* ============================================================
+   UAA Clone Theme — 笔趣阁蓝（浅蓝配色）
+   设计参考: 笔趣阁经典配色 + UAA 风格
+   主色调: #1e88e5 (浅蓝) + #f5f9ff (淡蓝背景)
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --uaa-primary: #1e88e5;
+  --uaa-primary-dark: #1976d2;
+  --uaa-primary-light: #e3f2fd;
+  --uaa-bg: #f5f9ff;
+  --uaa-bg-card: #ffffff;
+  --uaa-border: #e1edf7;
+  --uaa-text: #2c3e50;
+  --uaa-text-muted: #7a8a99;
+  --uaa-text-light: #b0bec5;
+  --uaa-accent: #ff5722;
+  --uaa-success: #4caf50;
+  --uaa-warning: #ff9800;
+}
+
+body {
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  background: var(--uaa-bg);
+  color: var(--uaa-text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+a {
+  color: var(--uaa-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+a:hover { color: var(--uaa-primary-dark); text-decoration: underline; }
+
+.uaa-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ─── 顶部导航 ─── */
+.uaa-header {
+  background: linear-gradient(to bottom, var(--uaa-primary) 0%, var(--uaa-primary-dark) 100%);
+  box-shadow: 0 2px 6px rgba(30, 136, 229, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.uaa-header-bar {
+  height: 56px;
+}
+
+.uaa-header-bar .uaa-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.uaa-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  flex-shrink: 0;
+}
+.uaa-logo:hover { text-decoration: none; color: #fff; }
+
+.uaa-nav {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.uaa-nav-item {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.uaa-nav-item:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  text-decoration: none;
+}
+
+.uaa-search {
+  display: flex;
+  flex-shrink: 0;
+}
+.uaa-search-input {
+  width: 200px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 4px 0 0 4px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.uaa-search-input:focus { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4) inset; }
+.uaa-search-btn {
+  background: var(--uaa-accent);
+  color: #fff;
+  border: 0;
+  padding: 8px 18px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+.uaa-search-btn:hover { background: #f4511e; }
+
+/* ─── Main ─── */
+.uaa-main {
+  padding: 24px 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+/* ─── Section ─── */
+.uaa-section {
+  background: var(--uaa-bg-card);
+  border: 1px solid var(--uaa-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.uaa-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--uaa-primary-light);
+  border-bottom: 1px solid var(--uaa-border);
+}
+
+.uaa-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--uaa-primary-dark);
+  position: relative;
+  padding-left: 12px;
+}
+.uaa-section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 16px;
+  background: var(--uaa-primary);
+  border-radius: 2px;
+}
+
+.uaa-section-more {
+  font-size: 13px;
+  color: var(--uaa-text-muted);
+}
+.uaa-section-more a { color: var(--uaa-text-muted); }
+.uaa-section-more a:hover { color: var(--uaa-primary); }
+
+/* ─── Featured grid ─── */
+.uaa-featured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.uaa-book-card {
+  background: #fff;
+  border: 1px solid var(--uaa-border);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.uaa-book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.15);
+}
+
+.uaa-book-link {
+  display: block;
+  color: inherit;
+}
+.uaa-book-link:hover { text-decoration: none; color: inherit; }
+
+.uaa-book-cover-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: var(--uaa-primary-light);
+  overflow: hidden;
+}
+
+.uaa-book-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.uaa-book-status {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--uaa-warning);
+}
+.uaa-status-completed { background: var(--uaa-success); }
+
+.uaa-book-info {
+  padding: 8px 10px 12px;
+}
+.uaa-book-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--uaa-text);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.uaa-book-author {
+  font-size: 12px;
+  color: var(--uaa-text-muted);
+  margin-bottom: 4px;
+}
+.uaa-book-intro {
+  font-size: 12px;
+  color: var(--uaa-text-light);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Book list (笔趣阁两列布局) ─── */
+.uaa-list-layout {
+  padding: 8px 16px;
+}
+
+.uaa-book-list {
+  list-style: none;
+}
+
+.uaa-list-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px 80px 80px 100px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px dashed var(--uaa-border);
+  font-size: 13px;
+}
+.uaa-list-item:last-child { border-bottom: 0; }
+.uaa-list-item:hover { background: var(--uaa-primary-light); }
+
+.uaa-list-cat a {
+  color: var(--uaa-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.uaa-list-cat a:hover { color: var(--uaa-primary); text-decoration: none; }
+
+.uaa-list-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.uaa-list-title a {
+  color: var(--uaa-text);
+  font-weight: 500;
+  font-size: 14px;
+}
+.uaa-list-title a:hover { color: var(--uaa-primary); text-decoration: none; }
+
+.uaa-list-author {
+  color: var(--uaa-text-muted);
+  font-size: 13px;
+}
+
+.uaa-list-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: #fff;
+  background: var(--uaa-warning);
+  justify-self: start;
+}
+.uaa-list-status.uaa-status-completed { background: var(--uaa-success); }
+
+.uaa-list-chapters {
+  color: var(--uaa-text-muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.uaa-list-time {
+  color: var(--uaa-text-light);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* ─── 分类九宫格 ─── */
+.uaa-cats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+.uaa-cat-card {
+  display: block;
+  padding: 16px 20px;
+  border: 1px solid var(--uaa-border);
+  border-radius: 4px;
+  background: var(--uaa-primary-light);
+  color: var(--uaa-text);
+  transition: all 0.15s ease;
+}
+.uaa-cat-card:hover {
+  background: var(--uaa-primary);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.25);
+}
+.uaa-cat-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: inherit;
+}
+.uaa-cat-card p {
+  font-size: 12px;
+  color: var(--uaa-text-muted);
+}
+.uaa-cat-card:hover p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ─── Footer ─── */
+.uaa-footer {
+  background: var(--uaa-primary-dark);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 24px 0;
+  margin-top: 24px;
+}
+.uaa-footer-links {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.uaa-footer-links a {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  margin: 0 12px;
+}
+.uaa-footer-links a:hover { color: #fff; text-decoration: none; }
+.uaa-footer-copy {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.8;
+}
+
+/* ─── 响应式 ─── */
+@media (max-width: 992px) {
+  .uaa-featured-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .uaa-header-bar { height: auto; padding: 8px 0; }
+  .uaa-header-bar .uaa-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .uaa-nav { flex-wrap: wrap; justify-content: center; }
+  .uaa-search { width: 100%; }
+  .uaa-search-input { width: 100%; flex: 1; }
+
+  .uaa-list-item {
+    grid-template-columns: 60px 1fr 80px;
+    font-size: 12px;
+    gap: 8px;
+  }
+  .uaa-list-author, .uaa-list-chapters, .uaa-list-time { display: none; }
+
+  .uaa-cats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+  .uaa-cats-grid { grid-template-columns: 1fr; }
+  .uaa-featured-grid { grid-template-columns: 1fr 1fr; }
+}

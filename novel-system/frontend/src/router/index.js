@@ -18,6 +18,7 @@ const routes = [
     redirect: '/admin/dashboard',
     children: [
       { path: 'dashboard', name: 'dashboard', component: () => import('@/views/dashboard/Index.vue'), meta: { title: '工作台', icon: 'Odometer' } },
+      { path: 'analytics', name: 'analytics', component: () => import('@/views/analytics/Index.vue'), meta: { title: '数据看板', icon: 'TrendCharts', perm: 'system.view' } },
       { path: 'novels', name: 'novels', component: () => import('@/views/novels/Index.vue'), meta: { title: '小说管理', icon: 'Reading', perm: 'novel.view' } },
       { path: 'novels/:id', name: 'novel-detail', component: () => import('@/views/novels/Detail.vue'), meta: { title: '小说详情', hidden: true, perm: 'novel.view' } },
       { path: 'rules', name: 'rules', component: () => import('@/views/rules/Index.vue'), meta: { title: '采集规则', icon: 'Document', perm: 'rule.view' } },
