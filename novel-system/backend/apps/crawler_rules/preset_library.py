@@ -6,9 +6,9 @@ PRESETS = {
         "name": "起点中文网",
         "host": "www.qidian.com",
         "list_config": {
-            "item_selector": {"type": "css", "expr": "div.book-img-text li"},
+            "item_selector": {"type": "css", "expr": "div.book-img-text li, .book-item, .all-book-list li, .rank-list li"},
             "book_url": {"type": "xpath", "expr": ".//a/@href"},
-            "book_title": {"type": "css", "expr": "h4 a::text"},
+            "book_title": {"type": "css", "expr": "h4 a::text, h2 a::text, .book-name::text, .title::text"},
             "book_author": {"type": "css", "expr": ".author::text"},
         },
         "book_config": {
@@ -21,7 +21,7 @@ PRESETS = {
         "name": "纵横中文网",
         "host": "www.zongheng.com",
         "list_config": {
-            "item_selector": {"type": "css", "expr": "div.book-item"},
+            "item_selector": {"type": "css", "expr": "div.book-item, .search-result li, .book-list li, .novel-item"},
             "book_url": {"type": "xpath", "expr": ".//a/@href"},
             "book_title": {"type": "css", "expr": ".book-name::text"},
         },
@@ -30,7 +30,7 @@ PRESETS = {
         "name": "17K小说网",
         "host": "www.17k.com",
         "list_config": {
-            "item_selector": {"type": "css", "expr": "ul.list li"},
+            "item_selector": {"type": "css", "expr": "ul.list li, .book-list li, .novel-list li, .search-list li"},
             "book_url": {"type": "xpath", "expr": ".//a/@href"},
             "book_title": {"type": "css", "expr": "a::text"},
         },

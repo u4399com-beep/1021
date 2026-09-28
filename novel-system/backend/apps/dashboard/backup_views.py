@@ -34,7 +34,6 @@ def trigger_backup(request):
 @permission_classes([permissions.IsAuthenticated])
 def list_backups(request):
     """List backup files in the backup directory."""
-    from pathlib import Path
     from .backup_engine import get_backup_dir
     backup_dir = get_backup_dir()
     files = []

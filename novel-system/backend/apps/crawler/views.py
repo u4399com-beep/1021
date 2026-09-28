@@ -109,7 +109,6 @@ class ProxyPoolViewSet(viewsets.ModelViewSet):
         """Quick-check all active proxies with a HEAD request."""
         import httpx
         from django.utils import timezone
-        from datetime import timedelta
 
         results = []
         test_url = request.data.get("test_url") or "https://www.example.com/"

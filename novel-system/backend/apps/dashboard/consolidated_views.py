@@ -1,5 +1,4 @@
 """Consolidated dashboard endpoints (v172) — merged from extra_views/v54/v69."""
-from __future__ import annotations
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -152,7 +151,6 @@ def segment_content(request):
 def export_rules(request):
     """v62: export rules as JSON."""
     from apps.crawler_rules.io import export_rules
-    from django.http import JsonResponse
     source_id = request.query_params.get("source_id")
     pkg = export_rules(int(source_id) if source_id else None)
     from django.utils import timezone

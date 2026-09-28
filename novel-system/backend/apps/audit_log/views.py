@@ -35,7 +35,6 @@ class AuditEntryViewSet(viewsets.ReadOnlyModelViewSet):
     def summary(self, request):
         """Aggregate stats: top users / actions / resources."""
         from django.db.models import Count
-        from collections import defaultdict
         # Top 10 users
         by_user = list(self.queryset.values("username").annotate(
             count=Count("id")

@@ -13,7 +13,6 @@ def adjust_priorities() -> dict:
       - Max cap: 100
     """
     from django.utils import timezone
-    from datetime import timedelta
     now = timezone.now()
     adjusted = []
     queued = CrawlerTask.objects.filter(status="queued")

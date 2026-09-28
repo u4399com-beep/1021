@@ -184,8 +184,13 @@ def fetch_page(url: str, *, use_browser: bool = False, proxy: str | None = None)
     raise RuntimeError(f"all tiers exhausted, last error: {last_err}")
 
 
+def _sync_ssrf_check(url):
+    from .ssrf_guard import is_safe_url
+    if not is_safe_url(url): raise ValueError(url)
+
 def fetch_page_sync(url: str, *, use_browser: bool = False, proxy: str | None = None) -> str:
     """Backwards-compat alias — same as `fetch_page` (already sync)."""
+    _sync_ssrf_check(url)
     return fetch_page(url, use_browser=use_browser, proxy=proxy)
 
 

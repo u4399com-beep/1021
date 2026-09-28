@@ -12,7 +12,6 @@
 3. WAF → 使用 captcha solver
 4. 编码: 优先 GBK/GB2312（很多老站用 GBK）
 """
-from __future__ import annotations
 
 
 LIST_CONFIG = {

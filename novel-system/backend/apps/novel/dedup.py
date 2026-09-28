@@ -44,7 +44,6 @@ def merge_duplicates(primary: Book, secondary_ids: list[int]) -> dict:
     
     Moves chapters from secondary books to primary, then soft-deletes secondaries.
     """
-    from .models import Chapter
     moved = 0
     for sid in secondary_ids:
         try:

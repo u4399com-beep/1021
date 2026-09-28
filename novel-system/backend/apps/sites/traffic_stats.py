@@ -1,6 +1,5 @@
 """Site traffic stats (v63) — PV/UV by page type."""
 from datetime import timedelta
-from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
 

@@ -84,7 +84,8 @@ def _apply_regex(spec: SelectorSpec, source: Any) -> str | list[str] | None:
         source.text_content() if hasattr(source, "text_content") else str(source)
     )
     flags = re.MULTILINE | re.DOTALL
-    if spec.multi:
+    try:
+        if spec.multi:
         matches = re.findall(spec.expr, text, flags=flags)
         if spec.template and matches:
             matches = [
@@ -100,6 +101,8 @@ def _apply_regex(spec: SelectorSpec, source: Any) -> str | list[str] | None:
     if m.groups():
         return m.group(1)
     return m.group(0)
+    except re.error:
+        return None
 
 
 def _apply_css(spec: SelectorSpec, source: Any) -> str | list[str] | None:

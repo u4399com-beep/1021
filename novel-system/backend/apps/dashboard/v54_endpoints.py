@@ -131,7 +131,6 @@ def segment_content(request):
 def export_rules(request):
     """v62: export rules as JSON."""
     from apps.crawler_rules.io import export_rules
-    from django.http import JsonResponse
     source_id = request.query_params.get("source_id")
     pkg = export_rules(int(source_id) if source_id else None)
     from django.utils import timezone

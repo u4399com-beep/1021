@@ -58,6 +58,8 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
         toc_parser = build_parser(toc_rule.config)
         toc_data = toc_parser.parse("toc", toc_html, base_url=toc_url)
         chapters = toc_data.get("chapters", [])
+    if not chapters:
+        return book, []
         # Follow pagination if configured
         if "next_page" in toc_rule.config and toc_data.get("next_page"):
             _ = toc_data["next_page"]  # would recurse — left as TODO for next iteration
@@ -67,7 +69,11 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
     # 3. Disorder + dedup
     if task.enable_disorder:
         chapters = _disorder(chapters)
-    if task.enable_dedup_by_url:
+    try:
+            from .dedup_engine import is_duplicate_chapter
+    except ImportError:
+            pass
+        if task.enable_dedup_by_url:
         chapters = _dedup_by_url(chapters, book)
     if task.enable_dedup_by_title:
         chapters = _dedup_by_title(chapters, book)
@@ -89,6 +95,11 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
             if task.status in ("paused", "stopped"):
                 break
             # random interval
+            try:
+            from .anti_detection.delay_strategy import calculate_delay
+            _delay = calculate_delay(url, "httpx", error_count=task.failed_items)
+            time.sleep(_delay)
+        except ImportError:
             time.sleep(random.uniform(task.interval_min, task.interval_max))
 
     # 5. Smart classify + finished detection
@@ -414,7 +425,7 @@ def _download_cover(book: Book, cover_url: str):
         import httpx
         from PIL import Image
 
-        with httpx.Client(timeout=30, follow_redirects=True) as cli:
+        with httpx.Client(timeout=30, follow_redirects=True, max_redirects=5) as cli:
             r = cli.get(cover_url, headers={"User-Agent": "Mozilla/5.0"})
             if r.status_code != 200:
                 return
