@@ -1,5 +1,4 @@
 """Chapter content similarity detection (v85) — prevent duplicate crawl."""
-from __future__ import annotations
 import hashlib
 from difflib import SequenceMatcher
 

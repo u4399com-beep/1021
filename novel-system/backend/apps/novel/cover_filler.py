@@ -1,5 +1,4 @@
 """Cover filler (v47) — generate placeholder cover for books without one."""
-from __future__ import annotations
 from pathlib import Path
 from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont

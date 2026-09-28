@@ -2,7 +2,6 @@
 
 实际分类逻辑在 engine.py 用 jieba 分词 + 关键词匹配 + sklearn TF-IDF 兜底。
 """
-from __future__ import annotations
 
 from django.db import models
 

@@ -6,7 +6,6 @@
 - 偏移量 `offset` 用于书籍顺序错位展示（站间去重 SEO）
 - 每个 Site 启用时自动生成对应的 nginx 配置文件
 """
-from __future__ import annotations
 
 from django.core.cache import cache
 from django.db import models
@@ -107,10 +106,7 @@ class Site(models.Model):
 
 
 # v49: Re-export ABTestConfig for model discovery
-from .ab_test import ABTestConfig  # noqa: E402
 
 # v63: Re-export PageView
-from .traffic_stats import PageView  # noqa: E402
 
 # v70: Re-export AdSlot
-from .advertising import AdSlot  # noqa: E402

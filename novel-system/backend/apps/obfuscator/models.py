@@ -9,7 +9,6 @@ The obfuscation engine has 3 layers:
   3. Pseudo-original rewriting — synonym replacement + sentence restructure +
      interference sentence insertion. Produces per-page unique paragraph fingerprints.
 """
-from __future__ import annotations
 
 from django.db import models
 

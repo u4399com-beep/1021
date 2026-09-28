@@ -1,5 +1,4 @@
 """Auto priority adjustment (v64) — boost task priority based on queue depth."""
-from __future__ import annotations
 from django.db.models import Count, Q
 from .models import CrawlerTask
 

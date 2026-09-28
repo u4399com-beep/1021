@@ -1,5 +1,4 @@
 """Preset rule library (v77) — common site rule templates."""
-from __future__ import annotations
 
 
 PRESETS = {

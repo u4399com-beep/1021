@@ -4,7 +4,6 @@ Uses Django Channels (requires channels + daphne in production).
 For simplicity, this provides a Redis pub/sub based notification system
 that can be consumed by any WebSocket gateway.
 """
-from __future__ import annotations
 import json
 from django.core.cache import cache
 

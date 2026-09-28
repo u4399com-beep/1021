@@ -14,7 +14,6 @@ Configuration:
   BACKUP_S3_PREFIX=novel-system/
   BACKUP_RETENTION_DAYS=30
 """
-from __future__ import annotations
 
 import gzip
 import json
@@ -23,7 +22,6 @@ import shutil
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
 
 from django.conf import settings
 from django.core.management import call_command

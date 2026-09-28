@@ -11,10 +11,8 @@ Schema:
   Value: hash map {hour_str: "success_count:failure_count", ...}
   TTL: 25 hours
 """
-from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any
 
 from django.core.cache import cache
 

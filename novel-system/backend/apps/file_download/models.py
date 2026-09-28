@@ -1,5 +1,4 @@
 """文件下载配置 — 可定制内容插入（混淆、广告、站点信息）"""
-from __future__ import annotations
 
 from django.db import models
 

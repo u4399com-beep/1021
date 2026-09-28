@@ -1,9 +1,7 @@
 """Task execution report generator (v48) — produce a PDF summary."""
-from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 from django.conf import settings
-from loguru import logger
 
 
 def generate_task_report(task, format: str = "txt") -> Path:

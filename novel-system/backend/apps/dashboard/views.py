@@ -1,9 +1,7 @@
 """Dashboard analytics (v36) — weekly/monthly stats with chart-friendly output."""
-from __future__ import annotations
 
 from collections import defaultdict
 from datetime import timedelta
-from typing import Any
 
 from django.db.models import Count
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth

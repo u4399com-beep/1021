@@ -1,5 +1,4 @@
 """DRF permission classes for RBAC."""
-from __future__ import annotations
 
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 

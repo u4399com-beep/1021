@@ -2,7 +2,6 @@
 
 Used by the admin "preview" page and as an end-to-end test tool.
 """
-from __future__ import annotations
 
 import difflib
 from typing import Any

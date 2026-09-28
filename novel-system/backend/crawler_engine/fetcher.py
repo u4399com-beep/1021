@@ -43,7 +43,11 @@ class FetchContext:
 def fetch_with_httpx(ctx: FetchContext) -> str:
     import httpx
 
-    headers = {
+    try:
+        from .anti_detection.header_fingerprint import generate_fingerprint_headers
+        headers = generate_fingerprint_headers()
+    except ImportError:
+        headers = {
         "User-Agent": get_user_agent(),
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
@@ -61,14 +65,21 @@ def fetch_with_httpx(ctx: FetchContext) -> str:
 
     with httpx.Client(timeout=ctx.timeout, follow_redirects=True, max_redirects=5) as client:
         r = client.get(ctx.url, headers=headers)
+        # v157: WAF detection
+        if r.status_code == 403 or r.status_code == 429:
+            from .anti_detection.cloudflare_bypass import detect_waf
+            waf = detect_waf(r.text, dict(r.headers))
+            if waf["waf_type"]:
+                logger.warning(f"WAF detected: {waf["waf_type"]} url={ctx.url[:60]}")
         if r.status_code >= 400:
             raise RuntimeError(f"httpx: status {r.status_code}")
         # Detect encoding properly, fallback to utf-8
-        encoding = r.charset or r.encoding or "utf-8"
         try:
+            from .encoding_handler import detect_and_decode
+            return detect_and_decode(r.content, r.headers.get("content-type", ""))
+        except ImportError:
+            encoding = r.charset or r.encoding or "utf-8"
             return r.content.decode(encoding, errors="replace")
-        except (LookupError, TypeError):
-            return r.content.decode("utf-8", errors="replace")
 
 
 # ------------------------------------------------------------------

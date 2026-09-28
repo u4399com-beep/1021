@@ -14,14 +14,11 @@ Implementation:
   - Per-class counts are tracked in Redis hash for fast atomic ops.
   - Global max concurrent is configurable via settings.
 """
-from __future__ import annotations
 
 import time
-from typing import Optional
 
 from django.conf import settings
 from django.core.cache import cache
-from django.utils import timezone
 
 
 _GLOBAL_MAX = getattr(settings, "CRAWLER", {}).get("MAX_CONCURRENT_TASKS", 8)

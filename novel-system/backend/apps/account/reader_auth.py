@@ -1,5 +1,4 @@
 """Front-end reader auth (v87) — register/login/JWT for reader accounts."""
-from __future__ import annotations
 import hashlib, secrets, time
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny

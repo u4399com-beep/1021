@@ -1,5 +1,4 @@
 """SEO app views — sitemap, RSS feed, audit panel."""
-from __future__ import annotations
 
 from django.http import HttpResponse
 from rest_framework import permissions, status

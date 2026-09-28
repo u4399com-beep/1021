@@ -1,5 +1,4 @@
 """Distributed task scheduling (v74) — multi-node worker cluster support."""
-from __future__ import annotations
 from django.core.cache import cache
 
 

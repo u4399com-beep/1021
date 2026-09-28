@@ -7,7 +7,6 @@
 - 任务进度记录：已采集 URL 数 / 失败数 / 跳过数
 - 每次运行产生一个 TaskRun 记录，便于多次重试历史追溯
 """
-from __future__ import annotations
 
 from django.db import models
 from django.utils import timezone
@@ -228,4 +227,3 @@ class CrawlerTaskLog(models.Model):
 
 
 # v43: Re-export TaskTemplate for Django model discovery
-from .templates import TaskTemplate  # noqa: E402

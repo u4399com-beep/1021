@@ -1,5 +1,4 @@
 """Site config export/import (v94)."""
-from __future__ import annotations
 import json
 from apps.sites.models import Site, Theme
 

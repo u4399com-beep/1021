@@ -1,5 +1,4 @@
 """Crawler source health monitor (v45) — track success rate per source."""
-from __future__ import annotations
 from datetime import timedelta
 from django.db.models import Count, Q
 from django.utils import timezone

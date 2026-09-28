@@ -20,7 +20,6 @@ Validation:
   - code must be a valid slug (lowercase + dashes)
   - code must not collide with built-in themes
 """
-from __future__ import annotations
 
 import json
 import os
@@ -28,11 +27,8 @@ import re
 import shutil
 import zipfile
 from pathlib import Path
-from typing import Any
 
 from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from loguru import logger
 
 from apps.sites.models import Theme

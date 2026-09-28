@@ -1,5 +1,4 @@
 """Chapter content audit (v46) — detect banned/sensitive keywords."""
-from __future__ import annotations
 import re
 from django.db import models
 

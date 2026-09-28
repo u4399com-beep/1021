@@ -1,5 +1,4 @@
 """Alert dispatcher (v42) — automatically push system health alerts to webhooks."""
-from __future__ import annotations
 import time
 from django.core.cache import cache
 from loguru import logger

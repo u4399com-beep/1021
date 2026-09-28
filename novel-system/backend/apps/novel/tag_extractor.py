@@ -1,5 +1,4 @@
 """Tag auto-extraction (v81) — TF-IDF keyword extraction."""
-from __future__ import annotations
 from collections import Counter
 import re
 

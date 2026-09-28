@@ -1,5 +1,4 @@
 """Rule import/export (v62) — JSON package format for sharing rules between instances."""
-from __future__ import annotations
 import json
 from .models import CrawlerRule, CrawlerSource
 

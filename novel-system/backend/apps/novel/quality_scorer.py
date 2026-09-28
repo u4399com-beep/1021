@@ -1,5 +1,4 @@
 """Chapter quality scoring (v56) — assess content quality on a 0-100 scale."""
-from __future__ import annotations
 import re
 
 

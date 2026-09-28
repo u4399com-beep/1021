@@ -9,7 +9,6 @@ Recommended: schedule via Celery beat (daily at 03:00 AM) or crontab:
     0 3 * * * cd /opt/novel-system/docker && docker compose exec backend \
               python manage.py refresh_sitemaps > /var/log/novel-sitemaps.log 2>&1
 """
-from __future__ import annotations
 
 from django.core.management.base import BaseCommand
 

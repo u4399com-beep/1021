@@ -3,7 +3,6 @@
 Each check returns: {check, severity, ok, message, suggestion}
 severity: error | warning | info
 """
-from __future__ import annotations
 
 import re
 from dataclasses import dataclass

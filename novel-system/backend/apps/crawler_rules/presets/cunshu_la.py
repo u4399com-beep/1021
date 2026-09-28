@@ -19,7 +19,6 @@ URL 模式（推断自常见 PHP 小说站结构，需根据实际抓取页面�
   3. 测试时使用 Playwright tier（系统设置 → 采集引擎 → 选 playwright）
   4. 在测试 URL 中填入列表页 URL，可手动验证解析器
 """
-from __future__ import annotations
 
 
 LIST_CONFIG = {

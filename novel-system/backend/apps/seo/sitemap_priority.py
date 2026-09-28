@@ -1,5 +1,4 @@
 """Sitemap priority auto-ranking (v84) — rank books by popularity in sitemap."""
-from __future__ import annotations
 from apps.novel.models import Book
 
 def compute_priority(book: Book) -> str:

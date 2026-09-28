@@ -1,5 +1,4 @@
 """Public API endpoints — dashboard stats, settings overview."""
-from __future__ import annotations
 
 from django.db.models import Count, Sum
 from rest_framework import permissions

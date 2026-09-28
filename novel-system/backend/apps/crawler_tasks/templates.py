@@ -1,5 +1,4 @@
 """Crawler task templates (v43) — save common task configs for one-click reuse."""
-from __future__ import annotations
 import json
 from django.db import models
 from apps.crawler_tasks.models import CrawlerTask

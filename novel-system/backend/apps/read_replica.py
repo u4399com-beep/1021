@@ -22,7 +22,6 @@ Manual override (in code):
   with use_replica():
       qs = Book.objects.all()  # routed to replica
 """
-from __future__ import annotations
 
 import threading
 from contextlib import contextmanager

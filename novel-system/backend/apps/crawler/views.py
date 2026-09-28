@@ -1,5 +1,4 @@
 """Crawler app — engine diagnostics, suggest, tier testing, proxy pool, hyperbrowser."""
-from __future__ import annotations
 
 import base64
 from rest_framework import status, viewsets

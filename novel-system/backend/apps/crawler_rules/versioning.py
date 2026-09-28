@@ -1,8 +1,6 @@
 """Rule version control (v57) — track config changes + rollback."""
-from __future__ import annotations
 import json
 from django.db import models
-from django.utils import timezone
 from .models import CrawlerRule
 
 

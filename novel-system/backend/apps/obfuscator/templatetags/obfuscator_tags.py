@@ -15,7 +15,6 @@ Or for inline text:
 The tags look up the current site from the template context variable `site`
 (automatically provided by the Sites app via the theme renderer).
 """
-from __future__ import annotations
 
 from django import template
 from django.template.base import Node, TemplateSyntaxError, token_kwargs

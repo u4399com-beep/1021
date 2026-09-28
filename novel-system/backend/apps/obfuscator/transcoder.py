@@ -14,7 +14,6 @@ Each transformation is applied with `density` probability per character,
 so the output preserves partial similarity to the original — important
 because pure 100% transformation may itself become detectable.
 """
-from __future__ import annotations
 
 import random
 import re

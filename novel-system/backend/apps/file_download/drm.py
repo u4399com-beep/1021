@@ -15,7 +15,6 @@ Output:
     when provided with the key)
   - Key stored as a DownloadRecord attribute (key_id, key_url)
 """
-from __future__ import annotations
 
 import base64
 import hashlib
@@ -23,11 +22,9 @@ import json
 import os
 import secrets
 import zipfile
-from io import BytesIO
 from pathlib import Path
 from typing import Optional
 
-from django.conf import settings
 from loguru import logger
 
 

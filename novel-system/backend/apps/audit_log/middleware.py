@@ -12,7 +12,6 @@ Records:
   - Resource + resource_id extracted from path
   - Status code + duration
 """
-from __future__ import annotations
 
 import re
 import time

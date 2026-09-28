@@ -1,5 +1,4 @@
 """Chapter comment system (v91)."""
-from __future__ import annotations
 from django.db import models
 
 class ChapterComment(models.Model):

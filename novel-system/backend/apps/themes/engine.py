@@ -1,12 +1,10 @@
 """Theme metadata is stored in `apps.sites.models.Theme`. This app
 provides render helpers + theme discovery (static files for each theme).
 """
-from __future__ import annotations
 
 from pathlib import Path
 
 from django.conf import settings
-from django.template.loader import render_to_string
 
 
 THEME_TEMPLATES = {

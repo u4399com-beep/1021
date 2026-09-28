@@ -1,7 +1,5 @@
 """Slow query monitor (v52) — track queries slower than threshold."""
-from __future__ import annotations
 import time
-from django.db import connection
 from django.core.cache import cache
 
 

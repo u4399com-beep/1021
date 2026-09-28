@@ -1,8 +1,6 @@
 """Site performance benchmark (v82) — auto-stress-test."""
-from __future__ import annotations
 import time
 import httpx
-from loguru import logger
 
 
 def benchmark_url(url: str, concurrent: int = 10, total: int = 100) -> dict:

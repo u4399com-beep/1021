@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from .models import AuditEntry
-from .views import AuditEntryViewSet  # noqa — just to keep the import for apps loading
 
 
 @admin.register(AuditEntry)

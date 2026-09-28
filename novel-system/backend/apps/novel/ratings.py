@@ -1,5 +1,4 @@
 """Book ratings (v80) — user ratings + aggregate."""
-from __future__ import annotations
 from django.db import models
 from django.db.models import Avg
 

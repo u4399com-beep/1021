@@ -8,7 +8,6 @@ Endpoint:
 
 Sends a `data:` line every ~1.5 seconds containing the current progress.
 """
-from __future__ import annotations
 
 import json
 import time

@@ -3,7 +3,6 @@
 Provides a single endpoint that returns all key health metrics in one
 call — useful for a single-panel monitoring widget in the admin UI.
 """
-from __future__ import annotations
 
 import os
 import platform

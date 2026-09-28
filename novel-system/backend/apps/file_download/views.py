@@ -1,6 +1,5 @@
 """下载 API — 模板 CRUD + 触发下载"""
 from rest_framework.permissions import IsAuthenticated
-from __future__ import annotations
 
 from django.http import FileResponse, Http404
 from rest_framework import status, viewsets

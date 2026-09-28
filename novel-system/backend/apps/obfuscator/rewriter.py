@@ -15,12 +15,10 @@ Uniqueness:
   - Before rewriting, we check which transformations have been applied before
     to this exact original_hash and avoid repeating them.
 """
-from __future__ import annotations
 
 import hashlib
 import random
 import re
-from typing import Any
 
 from .models import InterferenceSentence, RewriteRecord, Synonym
 

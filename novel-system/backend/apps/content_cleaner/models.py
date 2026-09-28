@@ -2,7 +2,6 @@
 
 清洗规则可以匹配 HTML 片段、文本片段、关键词列表，匹配到的内容会被替换/移除。
 """
-from __future__ import annotations
 
 from django.db import models
 
@@ -64,4 +63,3 @@ class CleaningExecution(models.Model):
 
 
 # v46: Re-export BannedKeyword for model discovery
-from .audit import BannedKeyword  # noqa: E402

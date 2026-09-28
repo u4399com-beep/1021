@@ -7,11 +7,8 @@ Strategy:
 4. Use heuristics to map fields (title/author/cover/intro)
 5. Return a candidate rule config for the user to refine
 """
-from __future__ import annotations
 import re
-from typing import Any
 from bs4 import BeautifulSoup
-from loguru import logger
 
 
 def _find_repeating_items(soup: BeautifulSoup) -> tuple[str, list]:

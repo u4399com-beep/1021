@@ -5,7 +5,6 @@ Used by:
   - `apps.obfuscator.templatetags.obfuscator_tags.obfuscate` template tag
   - Direct API calls from theme renderers
 """
-from __future__ import annotations
 
 import random
 from typing import Optional

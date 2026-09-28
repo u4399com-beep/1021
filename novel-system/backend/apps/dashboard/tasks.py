@@ -5,7 +5,6 @@ Schedule via Celery beat:
 
 Configure via django_celery_beat admin or django-celery-beat PeriodicTask.
 """
-from __future__ import annotations
 
 from loguru import logger
 

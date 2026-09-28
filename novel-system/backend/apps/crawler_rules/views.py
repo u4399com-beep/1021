@@ -1,9 +1,8 @@
 """采集规则 API。
-from rest_framework.permissions import IsAuthenticated
 
 提供规则 CRUD + 测试接口。测试接口会在请求时执行解析器，返回解析结果。
 """
-from __future__ import annotations
+from rest_framework.permissions import IsAuthenticated
 
 import asyncio
 import time

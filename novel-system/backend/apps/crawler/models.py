@@ -3,7 +3,6 @@
 A pool of static proxies (IP:port) that the fetcher can round-robin through.
 Hyperbrowser sessions are managed separately in cache (see anti_detection/pool.py).
 """
-from __future__ import annotations
 
 from django.db import models
 

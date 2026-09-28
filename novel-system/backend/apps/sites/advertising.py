@@ -1,5 +1,4 @@
 """Ad slot management (v70) — manage ad placements across themes."""
-from __future__ import annotations
 from django.db import models
 
 

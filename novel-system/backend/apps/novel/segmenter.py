@@ -1,5 +1,4 @@
 """Content auto-segmentation (v61) — split long chapters into readable segments."""
-from __future__ import annotations
 import re
 
 

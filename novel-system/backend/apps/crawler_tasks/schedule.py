@@ -8,10 +8,8 @@ produces (or updates) a corresponding CrontabSchedule + PeriodicTask, and
 the beat scheduler will fire `apps.crawler_tasks.tasks.run_crawler_task`
 with the task id at the scheduled time.
 """
-from __future__ import annotations
 
 import re
-from typing import Optional
 
 from django.utils import timezone
 from loguru import logger

@@ -1,5 +1,4 @@
 """Extra dashboard endpoints (v42-v52 consolidated)."""
-from __future__ import annotations
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response

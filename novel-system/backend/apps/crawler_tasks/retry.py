@@ -8,11 +8,9 @@ Decides whether a failed task should be retried based on error type:
   - HTML parse error → DON'T retry (rule issue, not transient)
   - Chapter content empty → DON'T retry (parser issue)
 """
-from __future__ import annotations
 
 import re
 import time
-from typing import Any
 
 from django.utils import timezone
 

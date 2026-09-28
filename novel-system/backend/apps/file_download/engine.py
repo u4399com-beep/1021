@@ -1,10 +1,8 @@
 """文件下载引擎 — 拼装章节、插入混淆/广告/站点信息、输出 TXT 或 EPUB。"""
-from __future__ import annotations
 
 import os
 import random
 from pathlib import Path
-from typing import Iterable
 
 from django.conf import settings
 from django.template import Context, Template

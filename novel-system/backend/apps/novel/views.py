@@ -1,6 +1,5 @@
 """Novel API views."""
 from django.db.models import Count, Q
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response

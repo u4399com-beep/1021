@@ -12,7 +12,6 @@ After importing, you can test the rules in the admin UI:
   System settings → 采集规则 → 选择 cunshu.la 列表页规则 → 测试 → 填入
   https://www.cunshu.la/library.php?sort=latest&page=1
 """
-from __future__ import annotations
 
 from django.core.management.base import BaseCommand
 

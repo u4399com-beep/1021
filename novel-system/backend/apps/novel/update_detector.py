@@ -1,5 +1,4 @@
 """Chapter update detection (v65) — detect new chapters for incremental updates."""
-from __future__ import annotations
 from .models import Book, Chapter
 
 

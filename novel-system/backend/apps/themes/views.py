@@ -1,5 +1,4 @@
 """Theme API — list themes, preview, get theme metadata."""
-from __future__ import annotations
 
 from pathlib import Path
 

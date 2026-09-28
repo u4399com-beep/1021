@@ -1,8 +1,6 @@
 """API rate limiting (v101 fix) — atomic Redis ops + trusted proxy check."""
-from __future__ import annotations
 
 import time
-from typing import Callable
 
 from django.conf import settings
 from django.core.cache import cache

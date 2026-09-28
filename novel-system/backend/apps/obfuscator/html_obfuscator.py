@@ -25,12 +25,10 @@ Implementation notes:
     AND class attributes simultaneously
   - Comments and invisible elements are inserted in random positions
 """
-from __future__ import annotations
 
 import random
 import re
 import string
-from typing import Any
 
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 

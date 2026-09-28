@@ -308,6 +308,8 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
             parser = build_parser(rule.config)
             data = parser.parse("chapter", html, base_url=current_url)
             page_content = data.get("content") or ""
+            if isinstance(page_content, bytes):
+                page_content = page_content.decode("utf-8", errors="replace")
             if page_content:
                 pages_content.append(page_content)
             page_title = data.get("title") or ""

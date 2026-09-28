@@ -1,5 +1,4 @@
 """Webhook API — CRUD + test dispatch."""
-from __future__ import annotations
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action

@@ -1,9 +1,7 @@
 """Data export (v30) — CSV/JSON export of books, chapters, tasks, etc."""
-from __future__ import annotations
 
 import csv
 import json
-from typing import Iterable
 
 from django.http import StreamingHttpResponse
 

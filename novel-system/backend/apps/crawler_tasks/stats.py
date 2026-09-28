@@ -6,7 +6,6 @@ Used by the dashboard / task history panel to surface:
   - Average execution time
   - Most active tasks (top N by run count)
 """
-from __future__ import annotations
 
 from collections import defaultdict
 from datetime import timedelta

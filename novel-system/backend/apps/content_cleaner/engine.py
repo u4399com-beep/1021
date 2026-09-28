@@ -5,10 +5,8 @@
 2. 规则引擎按 CleaningRule 表顺序执行
 3. trafilatura / readability 做主体内容提取
 """
-from __future__ import annotations
 
 import re
-from typing import Any
 
 from bs4 import BeautifulSoup
 from lxml import html as lxml_html

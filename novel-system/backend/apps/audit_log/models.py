@@ -1,5 +1,4 @@
 """Audit log models — record user actions for compliance / debugging."""
-from __future__ import annotations
 
 from django.db import models
 

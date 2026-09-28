@@ -1,5 +1,4 @@
 """Per-domain rate limiter (v55) — prevent hammering a single source site."""
-from __future__ import annotations
 import time
 from urllib.parse import urlparse
 from django.core.cache import cache

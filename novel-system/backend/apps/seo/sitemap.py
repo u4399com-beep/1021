@@ -8,7 +8,6 @@ Generates a per-site sitemap.xml covering:
 
 Output: media/sitemaps/<host>.xml — served by Django or nginx.
 """
-from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path

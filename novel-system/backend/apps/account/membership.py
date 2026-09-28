@@ -1,7 +1,5 @@
 """Front-end user membership (v71) — reader accounts, bookshelf, reading history."""
-from __future__ import annotations
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
 

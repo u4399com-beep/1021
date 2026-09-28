@@ -4,7 +4,6 @@ required SEO tags (TDK, canonical, geo, schema.org, Open Graph, etc).
 This runs as part of the SEO audit panel — when a site uses a theme, the
 panel checks the theme's HTML files for required SEO elements.
 """
-from __future__ import annotations
 
 import re
 from pathlib import Path

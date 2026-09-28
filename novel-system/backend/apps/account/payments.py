@@ -1,5 +1,4 @@
 """Payment integration (v72) — VIP membership + paid chapters."""
-from __future__ import annotations
 from django.db import models
 
 

@@ -1,5 +1,4 @@
 """Webhook dispatch engine — formats payloads per provider + sends."""
-from __future__ import annotations
 
 import hashlib
 import hmac
@@ -7,7 +6,6 @@ import json
 import time
 import base64
 import urllib.parse
-from typing import Any
 
 import httpx
 from django.core.mail import send_mail

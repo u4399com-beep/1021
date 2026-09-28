@@ -1,5 +1,4 @@
 """Site traffic stats (v63) — PV/UV by page type."""
-from __future__ import annotations
 from datetime import timedelta
 from django.core.cache import cache
 from django.db import models

@@ -1,6 +1,5 @@
 """采集任务 API — 包括立即执行 / 暂停 / 停止 / 调整参数 / 日志查询"""
 from rest_framework.permissions import IsAuthenticated
-from __future__ import annotations
 
 from django.utils import timezone
 from rest_framework import mixins, status, viewsets

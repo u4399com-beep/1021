@@ -1,5 +1,4 @@
 """Execution estimate (v95) — estimate task duration."""
-from __future__ import annotations
 
 def estimate_execution(url_count: int, avg_seconds_per_url: float = 3.0,
                        threads_max: int = 5) -> dict:

@@ -1,9 +1,7 @@
 """Export endpoints — books / tasks / chapters / generic."""
-from __future__ import annotations
 
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
 
 from apps.novel.models import Book, Chapter
 from apps.crawler_tasks.models import CrawlerTask

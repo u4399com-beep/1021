@@ -2,7 +2,6 @@
 
 由站群管理界面调用，或由 Site.save() 触发（生产环境建议改为手动按钮避免 reload 风暴）。
 """
-from __future__ import annotations
 
 import os
 import subprocess

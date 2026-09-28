@@ -1,5 +1,4 @@
 """Novel serializers — Book / Category / Chapter / Tag / Volume."""
-from __future__ import annotations
 
 from rest_framework import serializers
 

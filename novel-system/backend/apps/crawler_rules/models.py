@@ -6,7 +6,6 @@
 - 规则字段全部用 JSONField，便于编辑（前端做结构化编辑器）
 - 内置"测试快照"功能：保留最近一次测试的 HTML 和解析结果
 """
-from __future__ import annotations
 
 from django.db import models
 
@@ -120,4 +119,3 @@ class CrawlerRule(models.Model):
         }
 
 # v57: Re-export RuleVersion
-from .versioning import RuleVersion  # noqa: E402

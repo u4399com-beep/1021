@@ -1,5 +1,4 @@
 """Obfuscator views — profile CRUD + synonym CRUD + interference CRUD + preview."""
-from __future__ import annotations
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action

@@ -1,5 +1,4 @@
 """Backup views — manual trigger + diagnostics."""
-from __future__ import annotations
 
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes

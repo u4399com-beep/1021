@@ -1,7 +1,5 @@
 """Book deduplication (v54) — detect duplicate books by title+author fingerprint."""
-from __future__ import annotations
 import hashlib
-from django.db.models import Q
 from .models import Book
 
 

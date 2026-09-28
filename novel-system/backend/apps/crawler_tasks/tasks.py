@@ -9,7 +9,6 @@ This is the orchestration layer:
 The actual fetch + parse logic lives in `crawler_engine.fetcher` and
 `crawler_engine.parsers`. This file wires them into a Celery pipeline.
 """
-from __future__ import annotations
 
 import random
 import time
@@ -18,8 +17,6 @@ from typing import Any
 from celery import group
 from celery.exceptions import SoftTimeLimitExceeded
 from celery.result import allow_join_result
-from django.db import transaction
-from django.utils import timezone
 from loguru import logger
 
 from apps.crawler_tasks.models import CrawlerTask, CrawlerTaskLog

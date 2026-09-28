@@ -1,6 +1,4 @@
 """Recommendation system (v90) — based on reading history."""
-from __future__ import annotations
-from collections import Counter
 from django.db.models import Q, Count
 from apps.novel.models import Book, Tag, Category
 from apps.account.membership import ReadingHistory

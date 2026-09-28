@@ -1,7 +1,5 @@
 """Execution time prediction (v58) — estimate how long a task will take."""
-from __future__ import annotations
 from datetime import timedelta
-from django.db.models import Avg
 from django.utils import timezone
 from .models import CrawlerTask
 

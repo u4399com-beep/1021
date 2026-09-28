@@ -6,10 +6,8 @@
 3. 取前 N 个权重最高的分类
 4. 完结判断：匹配 FinishedPattern 表的正则
 """
-from __future__ import annotations
 
 import re
-from typing import Iterable
 
 from .models import CategoryKeyword, FinishedPattern
 

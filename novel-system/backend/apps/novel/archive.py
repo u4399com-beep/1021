@@ -1,5 +1,4 @@
 """Data archiving (v44) — move old chapters to cold storage."""
-from __future__ import annotations
 import os, shutil, gzip, json
 from datetime import timedelta
 from pathlib import Path

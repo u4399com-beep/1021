@@ -1,5 +1,4 @@
 """A/B testing for site themes (v49) — randomly serve one of two themes."""
-from __future__ import annotations
 import random
 import hashlib
 from django.db import models

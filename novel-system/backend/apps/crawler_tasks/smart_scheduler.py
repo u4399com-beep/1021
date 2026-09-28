@@ -1,5 +1,4 @@
 """Smart scheduler (v50) — suggest best time to run based on historical success."""
-from __future__ import annotations
 from datetime import timedelta
 from django.db.models import Avg, Count
 from django.utils import timezone

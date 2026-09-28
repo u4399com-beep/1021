@@ -1,5 +1,4 @@
 """Batch rule testing (v93) — test all rules for a source at once."""
-from __future__ import annotations
 from apps.crawler_rules.models import CrawlerRule, CrawlerSource
 
 def batch_test_source(source_id: int, test_url: str = "") -> dict:

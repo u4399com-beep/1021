@@ -8,7 +8,6 @@ Design notes
 * `Chapter.status` — `pending` / `fetched` / `cleaned` / `published`.
 * Soft-delete via `is_deleted` to support incremental updates without losing history.
 """
-from __future__ import annotations
 
 from django.db import models
 from django.utils.text import slugify
@@ -276,7 +275,5 @@ class SuggestKeyword(models.Model):
         return f"{self.keyword} ({self.source}) → {self.main_slug}"
 
 # v80: Re-export BookRating
-from .ratings import BookRating  # noqa: E402
 
 # v91: Re-export ChapterComment
-from .comments import ChapterComment  # noqa: E402

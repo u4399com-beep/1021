@@ -10,7 +10,6 @@ Endpoints:
   GET /api/v1/search/tags/?q=...
   GET /api/v1/search/suggest/?q=...  (autocomplete)
 """
-from __future__ import annotations
 
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models import Q, QuerySet

@@ -1,6 +1,4 @@
 """Data integrity checker (v67) — verify foreign keys, indexes, constraints."""
-from __future__ import annotations
-from django.db import connection
 from .models import Book, Chapter, Volume
 
 

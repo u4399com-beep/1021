@@ -6,7 +6,6 @@ Generates per-site RSS XML for:
 
 Output format: RSS 2.0 (works in all readers), with Atom 1.0 link for compatibility.
 """
-from __future__ import annotations
 
 from typing import Iterable
 from urllib.parse import urljoin

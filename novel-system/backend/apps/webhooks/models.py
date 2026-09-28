@@ -1,5 +1,4 @@
 """Webhook models — supports DingTalk / WeCom / Slack / generic HTTP."""
-from __future__ import annotations
 
 from django.db import models
 

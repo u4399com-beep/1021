@@ -1,6 +1,5 @@
 """站群 API — 增删改查 + 主题切换 + 配置预览 + 重新生成 nginx 配置"""
 from rest_framework.permissions import IsAuthenticated
-from __future__ import annotations
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action

@@ -1,5 +1,4 @@
 """Reading experience preferences (v78) — font, background, night mode."""
-from __future__ import annotations
 
 
 THEMES = {

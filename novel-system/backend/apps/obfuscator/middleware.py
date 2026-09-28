@@ -8,7 +8,6 @@ Skips:
   - Responses with status != 200
   - Sites without an enabled ObfuscationProfile
 """
-from __future__ import annotations
 
 import re
 

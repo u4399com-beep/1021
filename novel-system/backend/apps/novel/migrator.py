@@ -1,7 +1,5 @@
 """Data migration tool (v75) — import data from other novel systems."""
-from __future__ import annotations
 import json
-from loguru import logger
 
 
 def import_books_from_json(json_data: list[dict] | str, overwrite: bool = False) -> dict:
