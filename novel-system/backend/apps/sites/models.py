@@ -105,3 +105,6 @@ class Site(models.Model):
 
 # v49: Re-export ABTestConfig for model discovery
 from .ab_test import ABTestConfig  # noqa: E402
+
+# v63: Re-export PageView
+from .traffic_stats import PageView  # noqa: E402

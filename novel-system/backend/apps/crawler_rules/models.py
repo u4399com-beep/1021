@@ -118,3 +118,6 @@ class CrawlerRule(models.Model):
             "last_test_at": self.last_test_at,
             "last_test_result": self.last_test_result,
         }
+
+# v57: Re-export RuleVersion
+from .versioning import RuleVersion  # noqa: E402
