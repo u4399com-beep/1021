@@ -85,7 +85,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
     def get_chapters(self, obj):
         # When the book has volumes, group chapters by volume
-        chapters = obj.chapters.all().order_by("volume__order_index", "order_index")
+        chapters = obj.chapters.all().order_by("volume__order_index", "order_index")[:200]
         return ChapterListSerializer(chapters, many=True).data
 
 

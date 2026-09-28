@@ -59,15 +59,16 @@ def fetch_with_httpx(ctx: FetchContext) -> str:
     if ctx.headers:
         headers.update(ctx.headers)
 
-    with httpx.Client(timeout=ctx.timeout, follow_redirects=True) as client:
+    with httpx.Client(timeout=ctx.timeout, follow_redirects=True, max_redirects=5) as client:
         r = client.get(ctx.url, headers=headers)
         if r.status_code >= 400:
             raise RuntimeError(f"httpx: status {r.status_code}")
-        # Try to detect charset, fallback to utf-8
+        # Detect encoding properly, fallback to utf-8
+        encoding = r.charset or r.encoding or "utf-8"
         try:
-            return r.content.decode(r.encoding or "utf-8", errors="replace")
+            return r.content.decode(encoding, errors="replace")
         except (LookupError, TypeError):
-            return r.text
+            return r.content.decode("utf-8", errors="replace")
 
 
 # ------------------------------------------------------------------
@@ -121,6 +122,13 @@ TIERS = (
 )
 
 
+def _check_ssrf(url: str) -> None:
+    """v124: Block SSRF in all fetch paths."""
+    from .ssrf_guard import is_safe_url
+    if not is_safe_url(url):
+        raise ValueError(f"URL blocked by SSRF protection: {url}")
+
+
 def fetch_page(url: str, *, use_browser: bool = False, proxy: str | None = None) -> str:
     """Walk through tiers in order, return first HTML.
 
@@ -135,6 +143,7 @@ def fetch_page(url: str, *, use_browser: bool = False, proxy: str | None = None)
     are skipped silently after the first attempt.
     """
     ctx = FetchContext(url=url, use_browser=use_browser, proxy=proxy)
+    _check_ssrf(url)  # v124: SSRF guard
     last_err: str | None = None
 
     for name, fn in TIERS:

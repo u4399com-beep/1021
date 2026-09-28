@@ -89,8 +89,11 @@ class Site(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         # Invalidate site cache
-        cache.delete(f"site:{self.host}")
-        cache.delete("site:all")
+        try:
+            cache.delete(f"site:{self.host}")
+            cache.delete("site:all")
+        except Exception:
+            pass
 
     @classmethod
     def get_by_host(cls, host: str) -> "Site | None":

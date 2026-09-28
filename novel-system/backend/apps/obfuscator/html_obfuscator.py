@@ -39,6 +39,7 @@ _RANDOM_TOKEN_LEN = 6
 
 
 def _rand_token(prefix: str = "x") -> str:
+    """Generate a random token — never returns empty."""
     """Generate a random CSS-class-like token: x + alphanumeric."""
     chars = string.ascii_lowercase + string.digits
     body = "".join(random.choices(chars, k=_RANDOM_TOKEN_LEN))

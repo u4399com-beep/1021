@@ -39,6 +39,8 @@ def _format_message(event: str, context: dict) -> str:
 
 
 def _dingtalk_sign(secret: str, timestamp: int) -> str:
+    if not secret:
+        return ""  # v133: empty secret guard
     """Compute DingTalk robot signature (HMAC-SHA256, base64)."""
     string_to_sign = f"{timestamp}\n{secret}"
     hmac_code = hmac.new(

@@ -38,7 +38,9 @@ def build_txt(book, template: DownloadTemplate) -> Path:
     """生成 TXT 文件"""
     out_dir = Path(settings.CRAWLER["DOWNLOAD_DIR"]) / str(book.id)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{book.title}.txt"
+    import re
+    safe_title = re.sub(r"[^\w一-鿿 .()-]", "_", book.title)[:100]
+    out_path = out_dir / f"{safe_title}.txt"
 
     ctx = {
         "site_name": book.source_site or "novel-system",
@@ -90,7 +92,8 @@ def build_epub(book, template: DownloadTemplate, site=None) -> Path:
 
     out_dir = Path(settings.CRAWLER["DOWNLOAD_DIR"]) / str(book.id)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{book.title}.epub"
+    safe_title = re.sub(r"[^\w一-鿿 .()-]", "_", book.title)[:100]
+    out_path = out_dir / f"{safe_title}.epub"
 
     ctx = {
         "site_name": (site.name if site else (book.source_site or "novel-system")),

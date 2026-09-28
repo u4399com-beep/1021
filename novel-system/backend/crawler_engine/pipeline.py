@@ -126,6 +126,9 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
 def _upsert_book(book_data: dict, *, source_url: str) -> Book | None:
     if not book_data or not book_data.get("title"):
         return None
+    _t = str(book_data["title"]).strip()
+    if not _t or len(_t) > 500:
+        return None
 
     title = str(book_data["title"]).strip()
     author_name = (book_data.get("author") or "").strip() or "佚名"

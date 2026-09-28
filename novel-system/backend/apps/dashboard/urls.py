@@ -85,7 +85,6 @@ from .v69_endpoints import (
     extract_tags, import_books, rate_book, reader_profile, reader_register,
     recent_notifications, reading_themes, rule_presets, run_benchmark,
 )
-from .v54_endpoints import *  # keep v54-v67 imports working
 
 urlpatterns += [
     # v69
