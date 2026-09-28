@@ -22,4 +22,6 @@ urlpatterns = [
     path("audit/", audit, name="audit-all"),
     path("audit/<int:site_id>/", audit, name="audit-one"),
     path("regenerate-sitemaps/", regenerate_sitemaps, name="regen-sitemaps"),
+    path("theme-check/", theme_check, name="theme-check-all"),
+    path("theme-check/<str:theme_code>/", theme_check, name="theme-check-one"),
 ]

@@ -145,3 +145,42 @@ class PreviewViewSet(viewsets.ViewSet):
             "sizes": {k: len(v.encode("utf-8")) if isinstance(v, str) else 0
                       for k, v in results.items()},
         })
+
+    @action(detail=False, methods=["post"], url_path="diff")
+    def diff(self, request):
+        """Render the same HTML twice and return the diff — used to verify
+        that each render produces unique structure."""
+        from .diff_tool import render_twice
+
+        text = request.data.get("text", "")
+        site_id = request.data.get("site_id")
+        site = Site.objects.filter(pk=site_id).first() if site_id else None
+
+        if not text:
+            return Response({"error": "text required"}, status=400)
+        if not site:
+            return Response({"error": "site_id required (must have obfuscation enabled)"}, status=400)
+
+        result = render_twice(site, text)
+        # Don't include full HTML in diff response to keep payload small
+        result.pop("render1", None)
+        result.pop("render2", None)
+        result.pop("original", None)
+        return Response(result)
+
+    @action(detail=False, methods=["post"], url_path="visual-diff")
+    def visual_diff(self, request):
+        """Return an HTML table highlighting changes between two renders."""
+        from .diff_tool import render_visual_diff
+
+        text = request.data.get("text", "")
+        site_id = request.data.get("site_id")
+        site = Site.objects.filter(pk=site_id).first() if site_id else None
+
+        if not text:
+            return Response({"error": "text required"}, status=400)
+        if not site:
+            return Response({"error": "site_id required"}, status=400)
+
+        result = render_visual_diff(site, text)
+        return Response(result)

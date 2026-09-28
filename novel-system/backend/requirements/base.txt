@@ -94,5 +94,11 @@ pydantic==2.9.2
 pydantic-settings==2.5.2
 croniter==2.0.5
 
+# ---- Captcha solver (optional, both are lazy-imported) ----
+# 2captcha API key in .env → no extra pip needed (uses httpx)
+# Tesseract OCR fallback (for simple captchas)
+# Requires system tesseract binary (apt install tesseract-ocr tesseract-ocr-chi-sim)
+pytesseract==0.3.13
+
 # ---- File / epub ----
 ebooklib==0.18

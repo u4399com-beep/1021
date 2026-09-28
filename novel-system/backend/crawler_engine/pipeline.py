@@ -280,15 +280,49 @@ def _dedup_by_title(chapters: list[dict], book: Book) -> list[dict]:
 def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = None) -> Chapter | None:
     """Fetch + parse + clean a single chapter.
 
+    Follows chapter-content pagination via `next_page` selector if present
+    in the rule config. Pages are concatenated in order with separator.
+
     Args:
         volume_name: if provided, link the chapter to a Volume with this name
                      (creating it if it doesn't exist).
     """
     try:
-        html = fetch_page(url)
-        parser = build_parser(rule.config)
-        data = parser.parse("chapter", html, base_url=url)
-        content = data.get("content") or ""
+        # Fetch all pages of this chapter (some novels split chapters across pages)
+        pages_content = []
+        pages_titles = []
+        current_url = url
+        seen_urls = set()
+        max_pages = 20  # safety cap
+        for _page_idx in range(max_pages):
+            if current_url in seen_urls:
+                break
+            seen_urls.add(current_url)
+
+            html = fetch_page(current_url)
+            parser = build_parser(rule.config)
+            data = parser.parse("chapter", html, base_url=current_url)
+            page_content = data.get("content") or ""
+            if page_content:
+                pages_content.append(page_content)
+            page_title = data.get("title") or ""
+            if page_title and page_title not in pages_titles:
+                pages_titles.append(page_title)
+
+            # Follow next_page if configured
+            next_spec_dict = rule.config.get("next_page")
+            if not next_spec_dict:
+                break
+            next_url = _resolve_next_page(current_url, html, next_spec_dict)
+            if not next_url or next_url == current_url:
+                break
+            current_url = next_url
+
+        # Combine all pages
+        content = "\n\n".join(pages_content)
+        # If title has multiple page versions, pick the first
+        final_title = title or (pages_titles[0] if pages_titles else "未命名")
+
         if task.enable_cleaner:
             content = clean_content(content, target="chapter")
         word_count = len(content)
@@ -299,7 +333,7 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
             try:
                 ch_dir = os.path.join(settings.CRAWLER["CHAPTER_DIR"], str(book.id))
                 os.makedirs(ch_dir, exist_ok=True)
-                fn = f"{idx:05d}_{(title or 'untitled')[:30]}.txt"
+                fn = f"{idx:05d}_{(final_title or 'untitled')[:30]}.txt"
                 with open(os.path.join(ch_dir, fn), "w", encoding="utf-8") as f:
                     f.write(content)
                 txt_path = os.path.join(ch_dir, fn)
@@ -310,7 +344,6 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
         volume_obj = None
         if volume_name:
             from apps.novel.models import Volume
-            # Find or create a volume by name; pick next order_index if new
             vol_idx = book.volumes.count() + 1
             volume_obj, _ = Volume.objects.get_or_create(
                 book=book, name=volume_name,
@@ -320,7 +353,7 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
         chapter, _ = Chapter.objects.update_or_create(
             book=book, source_url=url,
             defaults={
-                "title": title,
+                "title": final_title,
                 "order_index": idx,
                 "source_order": idx,
                 "disorder_applied": task.enable_disorder,
@@ -328,6 +361,8 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
                 "content": content if storage in ("db", "both") else "",
                 "txt_path": txt_path,
                 "word_count": word_count,
+                "source_paged": len(pages_content) > 1,
+                "source_page_count": len(pages_content),
                 "status": "cleaned" if task.enable_cleaner else "fetched",
                 "fetched_at": timezone.now(),
             },
@@ -335,6 +370,21 @@ def _crawl_chapter(task, book, url, title, idx, rule, volume_name: str | None = 
         return chapter
     except Exception as e:
         logger.error(f"chapter fetch failed url={url} err={e!r}")
+        return None
+
+
+def _resolve_next_page(current_url: str, html: str, next_spec_dict: dict) -> str | None:
+    """Extract and absolutize the next-page URL from chapter HTML."""
+    try:
+        from .parsers.selectors import SelectorSpec, apply, _parse_html
+        spec = SelectorSpec.from_dict(next_spec_dict)
+        spec.base_url = current_url
+        tree = _parse_html(html)
+        next_url = apply(spec, tree)
+        if next_url and isinstance(next_url, str):
+            return next_url
+        return None
+    except Exception:
         return None
 
 

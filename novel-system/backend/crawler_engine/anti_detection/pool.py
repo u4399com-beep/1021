@@ -87,13 +87,17 @@ def get_proxy() -> Optional[str]:
 _HYPERBROWSER_SESSION_CACHE_KEY = "hyperbrowser:sessions"
 _HYPERBROWSER_SESSION_TTL = 90  # seconds — Hyperbrowser sessions last ~5min by default
 
+# Available Hyperbrowser regions
+HYPERBROWSER_REGIONS = ("auto", "us", "eu", "asia", "cn", "in", "br")
 
-def get_hyperbrowser_session():
+
+def get_hyperbrowser_session(region: str = "auto"):
     """Return a Hyperbrowser CDP URL (create or reuse a cached one).
 
-    Returns: dict with keys:
-        cdp_url, session_id, region, created_at, expires_at
-    Raises: RuntimeError if HYPERBROWSER_API_KEY is not configured.
+    Args:
+        region: one of HYPERBROWSER_REGIONS. Region routing allows targeting
+                specific geographic IP pools — useful when source sites
+                geo-block (e.g., a CN-hosted site may need asia/cn region).
     """
     import httpx
     from django.conf import settings
@@ -105,17 +109,18 @@ def get_hyperbrowser_session():
     # Check cache first — share sessions across worker processes
     cached = cache.get(_HYPERBROWSER_SESSION_CACHE_KEY)
     if cached and isinstance(cached, list) and cached:
-        # Pick the least-recently-used session
-        cached.sort(key=lambda s: s.get("last_used_at", 0))
-        return cached[0]
+        # Pick the LRU session that matches the requested region (or any if "auto")
+        matching = [s for s in cached if s.get("region") == region or region == "auto"]
+        pool = matching if matching else cached
+        pool.sort(key=lambda s: s.get("last_used_at", 0))
+        return pool[0]
 
-    # Create a new session
+    # Create a new session in the requested region
     create_url = "https://api.hyperbrowser.dev/v1/sessions"
     payload = {
         "sessionOptions": {
             "solve_captchas": True,
-            "proxy": "auto",  # Hyperbrowser's residential pool
-            # Additional anti-bot options:
+            "proxy": region if region != "auto" else "auto",
             "_stealth": True,
         }
     }
@@ -135,7 +140,7 @@ def get_hyperbrowser_session():
     session = {
         "session_id": data.get("id") or data.get("sessionId"),
         "cdp_url": cdp_url,
-        "region": data.get("region", "auto"),
+        "region": data.get("region", region),
         "created_at": time.time(),
         "expires_at": time.time() + _HYPERBROWSER_SESSION_TTL,
         "last_used_at": time.time(),

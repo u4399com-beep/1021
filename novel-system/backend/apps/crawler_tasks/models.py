@@ -103,6 +103,16 @@ class CrawlerTask(models.Model):
     schedule_max_runs = models.IntegerField("最大执行次数", default=0, help_text="0 = 无限")
     schedule_run_count = models.IntegerField("已执行次数", default=0)
 
+    # 并发优先级 — 全局并发控制器使用 (priority, max_concurrent) 决定是否启动
+    priority = models.IntegerField("任务优先级", default=50,
+        help_text="0-100，100 最高。高优先级任务会先获得执行槽位")
+    max_concurrent_per_class = models.IntegerField(
+        "同类任务最大并发数", default=3,
+        help_text="同一 source 站点的任务最多同时运行 N 个。0 = 不限制"
+    )
+    exclusive = models.BooleanField("独占执行", default=False,
+        help_text="为 True 时，本任务运行期间不允许其他任务运行（适合大型全量采集）")
+
     # 进度统计
     total_items = models.IntegerField("总数", default=0)
     processed_items = models.IntegerField("已处理", default=0)

@@ -37,7 +37,11 @@ from config import celery_app
     retry_kwargs={"max_retries": 1},
 )
 def run_crawler_task(self, task_id: int):
-    """Main entry point — runs the full crawler pipeline."""
+    """Main entry point — runs the full crawler pipeline.
+
+    Acquires a concurrency slot first; if no slot is available, the task
+    is re-queued with a short delay (max 3 retries, then marked as 'queued').
+    """
     task = CrawlerTask.objects.filter(pk=task_id).first()
     if not task:
         logger.warning(f"crawler task {task_id} not found")
@@ -47,16 +51,31 @@ def run_crawler_task(self, task_id: int):
         logger.info(f"crawler task {task_id} disabled, skip")
         return
 
+    # Concurrency control — try to acquire a slot
+    from .concurrency import acquire_slot, release_slot
+    if not acquire_slot(task):
+        # No slot available — re-queue with 30s delay
+        logger.info(f"task {task_id} waiting for concurrency slot")
+        run_crawler_task.apply_async(args=[task_id], countdown=30)
+        return
+
+    try:
+        _execute_task(self, task)
+    finally:
+        release_slot(task)
+
+
+def _execute_task(self, task):
+    """Actually run the crawler pipeline."""
     # Build URL list
     try:
         urls = _build_urls(task)
         task.total_items = len(urls)
         task.mark_running(self.request.id)
-        _log(task, f"start: total={len(urls)} mode={task.mode}")
+        _log(task, f"start: total={len(urls)} mode={task.mode} priority={task.priority}")
     except Exception as e:
         task.mark_error(repr(e))
-        logger.exception(f"task {task_id} prepare error")
-        # Even on error, record the run if this was a scheduled invocation
+        logger.exception(f"task {task.id} prepare error")
         try:
             from .schedule import record_run
             record_run(task)

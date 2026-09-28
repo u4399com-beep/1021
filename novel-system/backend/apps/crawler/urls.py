@@ -25,5 +25,7 @@ urlpatterns = [
     path("hyperbrowser/status/", hyperbrowser_status, name="hyperbrowser-status"),
     path("hyperbrowser/create-session/", hyperbrowser_create_session, name="hyperbrowser-create"),
     path("hyperbrowser/release-session/", hyperbrowser_release_session, name="hyperbrowser-release"),
+    path("captcha/status/", captcha_status, name="captcha-status"),
+    path("captcha/solve/", captcha_solve, name="captcha-solve"),
     path("", include(router.urls)),
 ]

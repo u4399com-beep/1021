@@ -1,6 +1,7 @@
 """Crawler app — engine diagnostics, suggest, tier testing, proxy pool, hyperbrowser."""
 from __future__ import annotations
 
+import base64
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -132,16 +133,74 @@ class ProxyPoolViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def record_success(self, request, pk=None):
         p = self.get_object()
-        p.success_count += 1
-        p.save(update_fields=["success_count"])
-        return Response({"success_count": p.success_count})
+        disabled = p.record_success()
+        return Response({
+            "success_count": p.success_count, "auto_disabled": disabled,
+            "success_rate": p.success_rate,
+        })
 
     @action(detail=True, methods=["post"])
     def record_failure(self, request, pk=None):
         p = self.get_object()
-        p.failure_count += 1
-        p.save(update_fields=["failure_count"])
-        return Response({"failure_count": p.failure_count})
+        disabled = p.record_failure()
+        return Response({
+            "failure_count": p.failure_count, "auto_disabled": disabled,
+            "success_rate": p.success_rate,
+        })
+
+    @action(detail=True, methods=["post"])
+    def reactivate(self, request, pk=None):
+        p = self.get_object()
+        p.reactivate()
+        return Response({"status": "reactivated", "id": p.id})
+
+    @action(detail=False, methods=["post"])
+    def sweep_disabled(self, request):
+        """Trigger an immediate check on all proxies — disables those below threshold."""
+        disabled = []
+        for p in self.get_queryset().filter(is_active=True, auto_disable_enabled=True):
+            if p.should_auto_disable:
+                p.record_failure()  # Will auto-disable based on threshold
+                disabled.append({
+                    "id": p.id, "name": p.name, "url": p.url,
+                    "success_rate": p.success_rate,
+                })
+        return Response({"swept_count": len(disabled), "disabled": disabled})
+
+
+# ------------------------------------------------------------------
+# Captcha solver diagnostics
+# ------------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def captcha_status(request):
+    """Return captcha solver configuration status."""
+    from crawler_engine.captcha_solver import diagnostics
+    return Response(diagnostics())
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def captcha_solve(request):
+    """Submit a captcha image (as base64) and return the solved text.
+
+    Body: {image: "base64-encoded PNG/JPG bytes", prefer: "2captcha"|"ocr"}
+    """
+    from crawler_engine.captcha_solver import solve_captcha
+    image_b64 = request.data.get("image", "")
+    prefer = request.data.get("prefer", "2captcha")
+    if not image_b64:
+        return Response({"error": "image (base64) required"}, status=400)
+    try:
+        image_bytes = base64.b64decode(image_b64)
+    except Exception as e:
+        return Response({"error": f"invalid base64: {e!r}"}, status=400)
+    result = solve_captcha(image_bytes, prefer=prefer)
+    return Response({
+        "solved": result is not None,
+        "text": result,
+        "backend_used": prefer,
+    })
 
 
 # ------------------------------------------------------------------

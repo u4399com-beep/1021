@@ -18,8 +18,10 @@ export const obfuscatorApi = {
   createInterference: (data) => http.post('/obfuscator/interferences/', data),
   updateInterference: (id, data) => http.patch(`/obfuscator/interferences/${id}/`, data),
   deleteInterference: (id) => http.delete(`/obfuscator/interferences/${id}/`),
-  // Preview
+  // Preview / Diff
   preview: (data) => http.post('/obfuscator/preview/preview/', data),
+  diff: (data) => http.post('/obfuscator/preview/diff/', data),
+  visualDiff: (data) => http.post('/obfuscator/preview/visual-diff/', data),
 }
 
 export const volumeApi = {

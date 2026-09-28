@@ -225,6 +225,11 @@ CRAWLER = {
     "DOWNLOAD_DIR": str(BASE_DIR / "media" / "downloads"),
     # Search-engine suggestion providers (configurable per site)
     "SUGGEST_PROVIDERS": ["baidu", "bing", "google", "sogou"],
+    # Concurrency control — global max concurrent crawler tasks
+    "MAX_CONCURRENT_TASKS": 8,
+    # Captcha recognition service (configured in .env)
+    "CAPTCHA_2CAPTCHA_KEY": os.environ.get("CAPTCHA_2CAPTCHA_KEY", ""),
+    "CAPTCHA_2CAPTCHA_ENDPOINT": os.environ.get("CAPTCHA_2CAPTCHA_ENDPOINT", "https://2captcha.com/in.php"),
 }
 
 LOGGING = {

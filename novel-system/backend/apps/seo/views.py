@@ -92,3 +92,20 @@ def regenerate_sitemaps(request):
         "count": len(paths),
         "files": [str(p) for p in paths],
     })
+
+
+# ------------------------------------------------------------------
+# Theme-level SEO check
+# ------------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, CanViewSEO])
+def theme_check(request, theme_code: str | None = None):
+    """Check SEO elements in theme HTML files.
+
+    GET /seo/theme-check/                      → check all themes
+    GET /seo/theme-check/<theme_code>/         → check one theme
+    """
+    from .theme_seo_check import check_all_themes, check_theme_files
+    if theme_code:
+        return Response(check_theme_files(theme_code))
+    return Response({"results": check_all_themes()})

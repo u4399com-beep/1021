@@ -176,3 +176,104 @@ class CrawlerTaskViewSet(
             "elapsed": (task.finished_at or timezone.now()).timestamp() -
                        (task.started_at or task.created_at).timestamp() if task.started_at else 0,
         })
+
+    # ------------------------------------------------------------------
+    # Batch operations
+    # ------------------------------------------------------------------
+    @action(detail=False, methods=["post"])
+    def batch_run(self, request):
+        """Batch start multiple tasks at once.
+
+        Body: {task_ids: [1, 2, 3]}
+        Returns: {started: [...], skipped: [...]}
+        """
+        task_ids = request.data.get("task_ids", [])
+        if not task_ids:
+            return Response({"error": "task_ids required"}, status=400)
+        started, skipped = [], []
+        for tid in task_ids:
+            try:
+                task = CrawlerTask.objects.get(pk=tid)
+                if task.status in ("running", "queued"):
+                    skipped.append({"id": tid, "reason": "already running"})
+                    continue
+                if not task.enabled:
+                    skipped.append({"id": tid, "reason": "disabled"})
+                    continue
+                async_result = run_crawler_task.delay(task.id)
+                task.celery_task_id = async_result.id
+                task.status = "queued"
+                task.started_at = timezone.now()
+                task.save(update_fields=["celery_task_id", "status", "started_at"])
+                started.append({"id": tid, "celery_id": async_result.id})
+            except CrawlerTask.DoesNotExist:
+                skipped.append({"id": tid, "reason": "not found"})
+        return Response({"started": started, "skipped": skipped})
+
+    @action(detail=False, methods=["post"])
+    def batch_pause(self, request):
+        """Batch pause multiple running tasks."""
+        task_ids = request.data.get("task_ids", [])
+        from config import celery_app
+        paused = []
+        for tid in task_ids:
+            try:
+                task = CrawlerTask.objects.get(pk=tid)
+                if task.status == "running":
+                    if task.celery_task_id:
+                        celery_app.control.revoke(task.celery_task_id, terminate=False, signal="SIGUSR1")
+                    task.mark_paused()
+                    paused.append(tid)
+            except CrawlerTask.DoesNotExist:
+                pass
+        return Response({"paused": paused})
+
+    @action(detail=False, methods=["post"])
+    def batch_stop(self, request):
+        """Batch stop multiple running/paused tasks."""
+        task_ids = request.data.get("task_ids", [])
+        from config import celery_app
+        stopped = []
+        for tid in task_ids:
+            try:
+                task = CrawlerTask.objects.get(pk=tid)
+                if task.status in ("running", "paused", "queued"):
+                    if task.celery_task_id:
+                        celery_app.control.revoke(task.celery_task_id, terminate=True, signal="SIGTERM")
+                    task.mark_stopped()
+                    stopped.append(tid)
+            except CrawlerTask.DoesNotExist:
+                pass
+        return Response({"stopped": stopped})
+
+    @action(detail=False, methods=["get"])
+    def concurrency_status(self, request):
+        """Return current concurrency state for diagnostics."""
+        from .concurrency import get_active_count
+        return Response(get_active_count())
+
+    # ------------------------------------------------------------------
+    # Stats / history
+    # ------------------------------------------------------------------
+    @action(detail=False, methods=["get"])
+    def stats(self, request):
+        """Overall task statistics + runs-per-day + top active tasks."""
+        from .stats import overall_stats, runs_per_day, top_active_tasks
+        days = int(request.query_params.get("days", 30))
+        return Response({
+            "overall": overall_stats(),
+            "runs_per_day": runs_per_day(days=days),
+            "top_active": top_active_tasks(limit=10),
+        })
+
+    @action(detail=False, methods=["get"])
+    def recent_logs(self, request):
+        """Aggregate recent log levels (default: last 24h)."""
+        from .stats import recent_log_summary
+        hours = int(request.query_params.get("hours", 24))
+        task_id = request.query_params.get("task_id")
+        return Response(recent_log_summary(
+            task_id=int(task_id) if task_id else None,
+            hours=hours,
+            limit=int(request.query_params.get("limit", 50)),
+        ))
