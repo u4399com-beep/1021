@@ -1,8 +1,5 @@
 """Encoding handler (v160) — auto-detect and convert page encoding to UTF-8."""
-from __future__ import annotations
 import re
-from typing import Optional
-from loguru import logger
 
 
 def detect_and_decode(raw_bytes: bytes, content_type: str = "") -> str:

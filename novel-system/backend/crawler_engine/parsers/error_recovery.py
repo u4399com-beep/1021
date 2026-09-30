@@ -1,6 +1,4 @@
 """Parser error recovery (v138) — graceful degradation when selectors fail."""
-from __future__ import annotations
-from typing import Any
 from loguru import logger
 
 

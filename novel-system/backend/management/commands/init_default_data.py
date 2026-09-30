@@ -7,7 +7,6 @@
 - Sample finished patterns
 - Default download template
 """
-from __future__ import annotations
 
 import os
 

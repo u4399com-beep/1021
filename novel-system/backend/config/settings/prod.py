@@ -1,5 +1,4 @@
 """Production settings — security tightened, performance optimizations."""
-from __future__ import annotations
 
 import os
 

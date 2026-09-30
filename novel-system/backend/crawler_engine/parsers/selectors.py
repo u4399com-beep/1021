@@ -11,7 +11,6 @@ A selector is a dict with `type` and `expr` (and optional `attr` / `template`):
 For list pages, the top-level `item_selector` defines one row; child selectors
 extract from each row's subtree.
 """
-from __future__ import annotations
 
 import re
 from dataclasses import dataclass
@@ -86,21 +85,21 @@ def _apply_regex(spec: SelectorSpec, source: Any) -> str | list[str] | None:
     flags = re.MULTILINE | re.DOTALL
     try:
         if spec.multi:
-        matches = re.findall(spec.expr, text, flags=flags)
-        if spec.template and matches:
-            matches = [
-                spec.template.format(*m) if isinstance(m, tuple) else spec.template.format(m)
-                for m in matches
-            ]
-        return matches
-    m = re.search(spec.expr, text, flags=flags)
-    if not m:
-        return None
-    if spec.template:
-        return spec.template.format(*m.groups())
-    if m.groups():
-        return m.group(1)
-    return m.group(0)
+            matches = re.findall(spec.expr, text, flags=flags)
+            if spec.template and matches:
+                matches = [
+                    spec.template.format(*m) if isinstance(m, tuple) else spec.template.format(m)
+                    for m in matches
+                ]
+            return matches
+        m = re.search(spec.expr, text, flags=flags)
+        if not m:
+            return None
+        if spec.template:
+            return spec.template.format(*m.groups())
+        if m.groups():
+            return m.group(1)
+        return m.group(0)
     except re.error:
         return None
 

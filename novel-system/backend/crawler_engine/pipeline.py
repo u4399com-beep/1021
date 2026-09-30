@@ -2,12 +2,10 @@
 
 This is what `apps/crawler_tasks/tasks.crawl_one_url` calls.
 """
-from __future__ import annotations
 
 import os
 import random
 import time
-from typing import Any
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
@@ -69,15 +67,16 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
     # 3. Disorder + dedup
     if task.enable_disorder:
         chapters = _disorder(chapters)
+        chapters = _disorder(chapters)
     try:
-            from .dedup_engine import is_duplicate_chapter
+        from .dedup_engine import is_duplicate_chapter
     except ImportError:
-            pass
-        if task.enable_dedup_by_url:
+        pass
+    if task.enable_dedup_by_url:
         chapters = _dedup_by_url(chapters, book)
     if task.enable_dedup_by_title:
-        chapters = _dedup_by_title(chapters, book)
 
+        chapters = _dedup_by_title(chapters, book)
     # 4. Fetch each chapter
     saved_chapters = []
     if chapter_rule and chapters:
@@ -96,11 +95,11 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
                 break
             # random interval
             try:
-            from .anti_detection.delay_strategy import calculate_delay
-            _delay = calculate_delay(url, "httpx", error_count=task.failed_items)
-            time.sleep(_delay)
-        except ImportError:
-            time.sleep(random.uniform(task.interval_min, task.interval_max))
+                from .anti_detection.delay_strategy import calculate_delay
+                _delay = calculate_delay(url, "httpx", error_count=task.failed_items)
+                time.sleep(_delay)
+            except Exception:
+                time.sleep(random.uniform(task.interval_min, task.interval_max))
 
     # 5. Smart classify + finished detection
     if task.enable_classifier:

@@ -1,5 +1,4 @@
 """Base settings shared across environments."""
-from __future__ import annotations
 
 import os
 from datetime import timedelta

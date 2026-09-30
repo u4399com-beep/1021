@@ -1,7 +1,6 @@
 """Human behavior simulation (v137) — mouse moves, scrolls, delays."""
 import random
 import time
-from typing import Any
 
 
 def simulate_human_delay(min_s: float = 1.0, max_s: float = 3.0) -> float:

@@ -1,8 +1,5 @@
 """Cloudflare detection and bypass (v155)."""
-from __future__ import annotations
 import re
-from typing import Any
-from loguru import logger
 
 
 CLOUDFLARE_PATTERNS = [

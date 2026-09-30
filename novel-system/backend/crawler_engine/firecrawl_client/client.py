@@ -8,7 +8,6 @@ and content extraction. We wrap it here so:
   3. The result is normalized to always return HTML (`html` field preferred,
      otherwise `markdown` rendered back to HTML).
 """
-from __future__ import annotations
 
 import logging
 from typing import Any

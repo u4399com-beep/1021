@@ -11,7 +11,6 @@ Strategy:
   3. If neither is available, raise an exception and let the task fall through
      to the next tier.
 """
-from __future__ import annotations
 
 import base64
 import time

@@ -11,12 +11,10 @@ to interact with the page and extract the answer. It is most useful when:
 The cost per call is non-trivial (LLM tokens + browser session), so we
 only invoke this tier when Tier-1 (Firecrawl) and Tier-0 (httpx) have failed.
 """
-from __future__ import annotations
 
 import asyncio
 import logging
 import os
-from typing import Any
 
 from django.conf import settings
 

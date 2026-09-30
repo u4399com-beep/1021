@@ -8,7 +8,6 @@ ProxyPool 路由策略：
     在 Playwright 中通过 CDP 连接 Hyperbrowser 的会话端点。
   - 否则：从 ProxyPool 表中按优先级+轮询取一个 HTTP/HTTPS 代理。
 """
-from __future__ import annotations
 
 import json
 import random

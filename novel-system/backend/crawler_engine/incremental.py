@@ -1,8 +1,5 @@
 """Incremental update + resume (v140) — detect new chapters + resume from checkpoint."""
-from __future__ import annotations
-from typing import Any
 from django.core.cache import cache
-from loguru import logger
 
 
 def get_checkpoint(task_id: int) -> dict:

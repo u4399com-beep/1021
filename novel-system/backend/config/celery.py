@@ -1,5 +1,4 @@
 """Celery app factory — v99: acks_late + max_retries to prevent stuck tasks."""
-from __future__ import annotations
 
 import os
 

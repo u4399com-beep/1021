@@ -5,10 +5,7 @@ When a rule test fails, analyze the error and suggest fixes:
 2. XPath returns empty → try alternative axis
 3. Regex no match → relax pattern
 """
-from __future__ import annotations
-from typing import Any
 from bs4 import BeautifulSoup
-from loguru import logger
 
 
 def analyze_parse_failure(html: str, config: dict, target: str) -> dict:

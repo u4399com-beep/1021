@@ -14,13 +14,10 @@ Usage:
     region = pick_region_for("https://www.cunshu.la/library.php")
     session = get_hyperbrowser_session(region=region)
 """
-from __future__ import annotations
 
 from urllib.parse import urlparse
-from typing import Optional
 
 from django.core.cache import cache
-from loguru import logger
 
 
 # TLD → region fallback map

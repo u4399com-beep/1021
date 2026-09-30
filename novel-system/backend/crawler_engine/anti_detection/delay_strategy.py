@@ -1,6 +1,5 @@
 """Smart delay strategy (v205) — randomized delays between requests."""
 import random
-from typing import Any
 
 
 def calculate_delay(url, tier, error_count=0, base_min=1.0, base_max=3.0):

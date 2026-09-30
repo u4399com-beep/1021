@@ -1,8 +1,6 @@
 """Rule recommender (v154) — suggest rules based on page structure analysis."""
-from __future__ import annotations
 from bs4 import BeautifulSoup
 from collections import Counter
-from typing import Any
 
 
 def analyze_page_structure(html: str) -> dict:

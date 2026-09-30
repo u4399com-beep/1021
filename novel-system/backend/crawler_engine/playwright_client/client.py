@@ -4,10 +4,8 @@ Hyperbrowser integration: when HYPERBROWSER_API_KEY is configured, we route
 through Hyperbrowser's hosted browser pool instead of running a local browser.
 This bypasses many anti-bot signals (residential IPs, real fingerprints, etc).
 """
-from __future__ import annotations
 
 import logging
-from typing import Any
 
 from django.conf import settings
 

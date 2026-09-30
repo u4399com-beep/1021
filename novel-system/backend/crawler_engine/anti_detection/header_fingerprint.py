@@ -4,7 +4,6 @@ Generates realistic browser header sets that vary per request,
 including Sec-Ch-Ua, Accept, Accept-Encoding variations.
 """
 import random
-from typing import Any
 
 
 # Real browser header templates
@@ -78,3 +77,10 @@ def generate_fingerprint_headers() -> dict[str, str]:
         headers["Sec-Fetch-User"] = "?1"
         headers["Upgrade-Insecure-Requests"] = "1"
     return headers
+
+
+# HTTP/2 support flag (randomized)
+def should_use_http2():
+    """Randomly enable HTTP/2 to avoid fingerprinting."""
+    import random
+    return random.random() < 0.5

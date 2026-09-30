@@ -1,6 +1,4 @@
 """Intelligent strategy selector (v178) — auto-choose best fetch tier."""
-from __future__ import annotations
-from typing import Any
 
 
 def select_strategy(url, known_waf=""):

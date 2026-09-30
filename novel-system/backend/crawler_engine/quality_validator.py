@@ -1,6 +1,4 @@
 """Crawl result quality validator (v179) — verify fetched content is usable."""
-from __future__ import annotations
-from typing import Any
 
 
 def validate_book_data(book_data):

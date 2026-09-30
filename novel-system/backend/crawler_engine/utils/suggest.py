@@ -1,5 +1,4 @@
 """Search engine suggestion fetcher — baidu / bing / google / sogou autocomplete."""
-from __future__ import annotations
 
 import httpx
 from loguru import logger

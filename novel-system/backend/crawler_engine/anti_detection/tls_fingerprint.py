@@ -1,6 +1,5 @@
 """TLS fingerprint + header order randomization (v135)."""
 import random
-from typing import Any
 
 
 # TLS cipher suites in random order to avoid fingerprinting

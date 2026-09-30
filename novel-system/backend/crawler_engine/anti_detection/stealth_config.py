@@ -1,7 +1,5 @@
 """Deep Playwright stealth config (v136) — hide automation signals."""
-from __future__ import annotations
 import random
-from typing import Any
 
 
 # CDP commands to hide automation

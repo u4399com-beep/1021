@@ -42,7 +42,6 @@ chapter::
       "next_page": {"type": "css", "expr": "a.next::attr(href)"}    # chapter content paged
     }
 """
-from __future__ import annotations
 
 from typing import Any
 

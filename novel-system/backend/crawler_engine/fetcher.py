@@ -11,7 +11,6 @@ The orchestrator walks tiers in order. A tier is skipped if:
 
 For each enabled tier, up to `max_retries` attempts are made before moving on.
 """
-from __future__ import annotations
 
 import time
 from dataclasses import dataclass

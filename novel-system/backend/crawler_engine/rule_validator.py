@@ -1,5 +1,4 @@
 """Rule validator (v214) — validate rule config before saving/testing."""
-from typing import Any
 
 
 REQUIRED_FIELDS = {

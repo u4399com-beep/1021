@@ -1,5 +1,4 @@
 """SSRF protection — block private/loopback/link-local addresses."""
-from __future__ import annotations
 
 import ipaddress
 from urllib.parse import urlparse
