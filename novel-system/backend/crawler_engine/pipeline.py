@@ -68,14 +68,11 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
     if task.enable_disorder:
         chapters = _disorder(chapters)
         chapters = _disorder(chapters)
-    try:
-        from .dedup_engine import is_duplicate_chapter
-    except ImportError:
-        pass
+    if task.enable_dedup_by_url:
         chapters = _dedup_by_url(chapters, book)
     if task.enable_dedup_by_title:
-
         chapters = _dedup_by_title(chapters, book)
+
     # 4. Fetch each chapter
     saved_chapters = []
     if chapter_rule and chapters:

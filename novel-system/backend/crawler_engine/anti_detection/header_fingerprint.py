@@ -116,3 +116,24 @@ SEC_FETCH_SITE_VALUES = ['none', 'same-origin', 'same-site', 'cross-site']
 def get_random_sec_fetch_site():
     import random
     return random.choice(SEC_FETCH_SITE_VALUES)
+
+
+# X-Forwarded-For randomization (simulate requests through proxies)
+def get_random_xff():
+    """Generate a random X-Forwarded-For chain to simulate proxy hops."""
+    import random
+    # Sometimes omit, sometimes include 1-2 fake IPs
+    if random.random() < 0.3:
+        return None  # Direct request
+    ip1 = f'{random.randint(1,223)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}'
+    if random.random() < 0.3:
+        ip2 = f'{random.randint(10,192)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}'
+        return f'{ip1}, {ip2}'
+    return ip1
+
+
+# Request timeout randomization
+def get_random_timeout(base=30, jitter=10):
+    """Randomize timeout to avoid fingerprinting by consistent timeout patterns."""
+    import random
+    return base + random.randint(0, jitter)
