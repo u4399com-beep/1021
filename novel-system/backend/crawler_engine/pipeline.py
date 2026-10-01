@@ -72,7 +72,6 @@ def crawl_book_pipeline(task, url: str) -> tuple[Book | None, list[Chapter]]:
         from .dedup_engine import is_duplicate_chapter
     except ImportError:
         pass
-    if task.enable_dedup_by_url:
         chapters = _dedup_by_url(chapters, book)
     if task.enable_dedup_by_title:
 

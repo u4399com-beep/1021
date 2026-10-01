@@ -84,3 +84,35 @@ def should_use_http2():
     """Randomly enable HTTP/2 to avoid fingerprinting."""
     import random
     return random.random() < 0.5
+
+
+# Common Referer values to simulate natural browsing
+REFERER_VALUES = [
+    None,  # Direct visit (no Referer)
+    'https://www.google.com/',
+    'https://www.baidu.com/',
+    'https://www.bing.com/',
+    'https://www.sogou.com/',
+    'https://www.google.com/search?q=novel',
+    'https://www.baidu.com/s?wd=novel',
+]
+
+def get_random_referer():
+    """Return a random Referer value (or None for direct visit)."""
+    import random
+    return random.choice(REFERER_VALUES)
+
+
+# DNT (Do Not Track) randomization
+def get_random_dnt():
+    """Randomly set DNT header to 0, 1, or omit."""
+    import random
+    return random.choice(['0', '1', None])
+
+
+# Sec-Fetch-Site randomization (simulate different navigation sources)
+SEC_FETCH_SITE_VALUES = ['none', 'same-origin', 'same-site', 'cross-site']
+
+def get_random_sec_fetch_site():
+    import random
+    return random.choice(SEC_FETCH_SITE_VALUES)

@@ -43,8 +43,21 @@ def fetch_with_httpx(ctx: FetchContext) -> str:
     import httpx
 
     try:
-        from .anti_detection.header_fingerprint import generate_fingerprint_headers
+        from .anti_detection.header_fingerprint import generate_fingerprint_headers, get_random_referer
         headers = generate_fingerprint_headers()
+        try:
+            from .anti_detection.header_fingerprint import get_random_dnt, get_random_sec_fetch_site
+            _dnt = get_random_dnt()
+            if _dnt: headers["DNT"] = _dnt
+            headers["Sec-Fetch-Site"] = get_random_sec_fetch_site()
+        except Exception:
+            pass
+        try:
+            _ref = get_random_referer()
+            if _ref:
+                headers["Referer"] = _ref
+        except Exception:
+            pass
     except ImportError:
         headers = {
         "User-Agent": get_user_agent(),

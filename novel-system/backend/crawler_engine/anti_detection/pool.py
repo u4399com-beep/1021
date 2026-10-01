@@ -203,3 +203,20 @@ def hyperbrowser_diagnostics() -> dict:
             for s in sessions
         ],
     }
+
+
+def get_cookie_from_db(domain: str) -> dict | None:
+    """v260: Get cookies from DB-backed CookiePool."""
+    try:
+        from apps.crawler.anti_detection_models import CookiePool
+        from django.utils import timezone
+        pool = CookiePool.objects.filter(
+            site_domain=domain, is_active=True
+        ).order_by('-use_count').first()
+        if pool and (not pool.expires_at or pool.expires_at > timezone.now()):
+            pool.use_count += 1
+            pool.save(update_fields=['use_count'])
+            return pool.cookies
+    except Exception:
+        pass
+    return None
