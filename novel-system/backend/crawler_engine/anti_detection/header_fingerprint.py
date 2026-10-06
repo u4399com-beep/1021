@@ -137,3 +137,28 @@ def get_random_timeout(base=30, jitter=10):
     """Randomize timeout to avoid fingerprinting by consistent timeout patterns."""
     import random
     return base + random.randint(0, jitter)
+
+
+# Header order randomization (v298) — reorder dict keys for httpx
+HEADER_ORDERS_V2 = [
+    ["User-Agent", "Accept", "Accept-Language", "Accept-Encoding", "Connection"],
+    ["Accept", "Accept-Language", "User-Agent", "Accept-Encoding", "Connection"],
+    ["Accept-Encoding", "Accept", "User-Agent", "Accept-Language", "Connection"],
+    ["Connection", "User-Agent", "Accept", "Accept-Encoding", "Accept-Language"],
+]
+
+def reorder_headers(headers: dict) -> dict:
+    """Reorder headers dict based on random browser-like order."""
+    import random
+    order = random.choice(HEADER_ORDERS_V2)
+    result = {}
+    for key in order:
+        for k, v in headers.items():
+            if k == key:
+                result[k] = v
+                break
+    # Add remaining
+    for k, v in headers.items():
+        if k not in order:
+            result[k] = v
+    return result

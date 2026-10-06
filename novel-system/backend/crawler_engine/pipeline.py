@@ -414,6 +414,11 @@ def _resolve_next_page(current_url: str, html: str, next_spec_dict: dict) -> str
 def _download_cover(book: Book, cover_url: str):
     if not cover_url:
         return
+    # v311: SSRF guard
+    from .ssrf_guard import is_safe_url
+    if not is_safe_url(cover_url):
+        logger.warning(f"cover download SSRF blocked: {cover_url}")
+        return
     try:
         from io import BytesIO
 

@@ -50,3 +50,26 @@ def full_human_simulation(page) -> None:
     if random.random() < 0.7:
         simulate_scroll(page)
     simulate_reading(page, duration_s=random.uniform(1.0, 3.0))
+
+
+def simulate_typing(page, text=""):
+    """Simulate typing text into a search box (v304)."""
+    try:
+        if not text:
+            return
+        for char in text:
+            page.keyboard.type(char)
+            import random
+            import time
+            time.sleep(random.uniform(0.05, 0.15))
+    except Exception:
+        pass
+
+
+def simulate_click_delay(page):
+    """Random delay before clicking (v304)."""
+    try:
+        import random, time
+        time.sleep(random.uniform(0.5, 2.0))
+    except Exception:
+        pass
