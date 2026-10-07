@@ -124,3 +124,23 @@ class CrawlerRuleViewSet(viewsets.ModelViewSet):
             "html_size": len(html),
             "result": result,
         })
+
+
+# ─── v318: yckceo/Legado 书源转换 ───
+from rest_framework.decorators import api_view as _api_view
+from rest_framework.permissions import IsAuthenticated as _IsAuth
+
+@_api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def convert_yckceo_source(request):
+    """将 yckceo/Legado 书源 JSON 转换为本系统规则并导入。
+    
+    Body: {book source JSON}
+    Returns: {source_id, source_name, rules_created, errors}
+    """
+    from crawler_engine.yckceo_converter import convert_and_import
+    source_json = request.data
+    if not isinstance(source_json, dict) or 'bookSourceUrl' not in source_json:
+        return Response({'error': 'invalid yckceo source format — needs bookSourceUrl'}, status=400)
+    result = convert_and_import(source_json)
+    return Response(result, status=201)
