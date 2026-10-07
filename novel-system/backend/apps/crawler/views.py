@@ -315,3 +315,11 @@ def suggest(request):
     providers = (request.query_params.get("providers") or "baidu,bing,google,sogou").split(",")
     result = fetch_all(kw, providers)
     return Response({"keyword": kw, "suggestions": result})
+
+
+# v319: 三层架构诊断
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def three_tier_status(request):
+    from crawler_engine.three_tier_fetcher import three_tier_diagnostics
+    return Response(three_tier_diagnostics())

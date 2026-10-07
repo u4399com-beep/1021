@@ -2,6 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    three_tier_status,
     ProxyPoolViewSet,
     captcha_solve,
     captcha_status,
@@ -34,6 +35,7 @@ urlpatterns = [
     path("region/set-override/", region_set_override, name="region-set-override"),
     path("region/clear-override/", region_clear_override, name="region-clear-override"),
     path("captcha/status/", captcha_status, name="captcha-status"),
-    path("captcha/solve/", captcha_solve, name="captcha-solve"),
+    path("captcha/solve/", captcha_solve,
+    path("three-tier/status/", three_tier_status, name="three-tier-status"), name="captcha-solve"),
     path("", include(router.urls)),
 ]

@@ -167,6 +167,11 @@ def fetch_page(url: str, *, use_browser: bool = False, proxy: str | None = None)
     """
     ctx = FetchContext(url=url, use_browser=use_browser, proxy=proxy)
     _check_ssrf(url)
+    # v319: 三层架构 (HTTP + iv8 + CloakBrowser)
+    _use_three_tier = os.environ.get("CRAWLER_THREE_TIER_ENABLED", "true").lower() in ("true", "1", "yes")
+    if _use_three_tier:
+        from .three_tier_fetcher import fetch_three_tier
+        return fetch_three_tier(url, use_browser=use_browser)
     # v186: log strategy selection
     try:
         from .strategy_selector import select_strategy
