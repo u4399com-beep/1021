@@ -323,3 +323,48 @@ def suggest(request):
 def three_tier_status(request):
     from crawler_engine.three_tier_fetcher import three_tier_diagnostics
     return Response(three_tier_diagnostics())
+
+
+# v321: 章节采集提速 API
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def speedup_chapter_fetch(request):
+    """并发抓取书籍章节 — 使用三层架构 + 并发 + 批量写入。
+    
+    Body: {book_id, chapter_urls: [...], max_workers: 3, storage: "db"}
+    Returns: {saved, skipped, failed, elapsed}
+    """
+    from crawler_engine.chapter_speedup import fetch_chapters_concurrent, batch_save_chapters
+    from apps.novel.models import Book
+    import time
+    
+    book_id = request.data.get('book_id')
+    chapter_urls = request.data.get('chapter_urls', [])
+    max_workers = int(request.data.get('max_workers', 3))
+    storage = request.data.get('storage', 'db')
+    
+    try:
+        book = Book.objects.get(pk=book_id, is_deleted=False)
+    except Book.DoesNotExist:
+        return Response({'error': 'book not found'}, status=404)
+    
+    # 获取章节规则
+    # 这里简化: 用 book 的 chapter_rule 配置
+    chapter_rule_config = request.data.get('rule_config', {
+        'content': {'type': 'css', 'expr': 'div.content, div#content, div.chapter-content'}
+    })
+    
+    chapters = [{'url': u, 'title': ''} for u in chapter_urls]
+    
+    t0 = time.time()
+    results = fetch_chapters_concurrent(book, chapters, chapter_rule_config, max_workers=max_workers)
+    save_result = batch_save_chapters(book, results, storage=storage)
+    elapsed = round(time.time() - t0, 1)
+    
+    return Response({
+        'saved': save_result['saved'],
+        'skipped': save_result['skipped'],
+        'failed': save_result['failed'],
+        'elapsed_s': elapsed,
+        'total': len(chapter_urls),
+    })

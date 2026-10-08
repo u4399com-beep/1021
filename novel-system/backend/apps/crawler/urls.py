@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     three_tier_status,
+    speedup_chapter_fetch,
     ProxyPoolViewSet,
     captcha_solve,
     captcha_status,
@@ -36,6 +37,8 @@ urlpatterns = [
     path("region/clear-override/", region_clear_override, name="region-clear-override"),
     path("captcha/status/", captcha_status, name="captcha-status"),
     path("captcha/solve/", captcha_solve,
-    path("three-tier/status/", three_tier_status, name="three-tier-status"), name="captcha-solve"),
+    path("three-tier/status/",
+    path("speedup-chapters/", speedup_chapter_fetch, name="speedup-chapters"), three_tier_status,
+    speedup_chapter_fetch, name="three-tier-status"), name="captcha-solve"),
     path("", include(router.urls)),
 ]
